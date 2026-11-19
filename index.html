@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-HzKT+9ytRKtm5o4KyiPcOFfnGchZpmgdgfnWrvP54No='; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-VrcZw1c6ILvPDc7Yr7jGeLS6uKbu2SKe/ppICtbC/Dw='; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -226,6 +226,9 @@
   #joinCode { text-transform: uppercase; letter-spacing: .3rem; font-weight: 700; text-align: center; }
   .player .name small { color: var(--muted); font-weight: 400; }
   .player.off { opacity: .55; }
+  .confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }
+  .names .advl, .check { display: flex !important; flex-direction: row !important; align-items: center; gap: .35rem; color: var(--muted); font-size: .9rem; white-space: nowrap; }
+  .names .advl input, .check input { width: 1.15rem; height: 1.15rem; margin: 0; padding: 0; box-shadow: none; accent-color: var(--btn); }
 </style>
 </head>
 <body>
@@ -246,6 +249,7 @@
         <li>Když hod nepřinese nic, přicházíš o body z celého tahu a hraje další hráč.</li>
         <li>Když dáš stranou všech 6 kostek, házíš znovu všemi šesti a body z tahu se dál sčítají.</li>
         <li>Když někdo dosáhne cíle, každý další hráč v pořadí má ještě jeden poslední tah. Vyhrává nejvyšší skóre.</li>
+        <li>Začátečníkům hra ztlumí kostky, které v hodu nebodují. Pokročilý hráč tuhle nápovědu nemá.</li>
       </ul>
       <table>
         <tr><td>5</td><td>50 b.</td></tr>
@@ -279,6 +283,7 @@
     <div id="hostForm" class="form">
       <label>Tvoje jméno <input id="hostName" maxlength="20" autocomplete="off"></label>
       <label>Body potřebné k vítězství <input id="hostTarget" type="number" inputmode="numeric" min="350" step="50"></label>
+      <label class="check"><input type="checkbox" id="hostAdv"> Pokročilý hráč (bez nápovědy)</label>
       <button class="btn" id="makeRoom">Vytvořit hru</button>
     </div>
     <div id="hostRoom" class="form" hidden>
@@ -299,6 +304,7 @@
     <div id="joinForm" class="form">
       <label>Tvoje jméno <input id="joinName" maxlength="20" autocomplete="off"></label>
       <label>Kód hry <input id="joinCode" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
+      <label class="check"><input type="checkbox" id="joinAdv"> Pokročilý hráč (bez nápovědy)</label>
       <button class="btn" id="joinBtn">Připojit</button>
     </div>
     <div id="joinRoom" class="form" hidden>
@@ -387,8 +393,8 @@
   function deadDie(vals, v) { return !isStraight(vals) && v !== 1 && v !== 5 && counts(vals)[v] < 3; }
 
   // ================= pravidla hry (běží u zakladatele / lokálně) =================
-  function newGame(names, target) {
-    const g = { phase: 'play', target, players: names.map(name => ({ name, score: 0, off: false })), cur: 0,
+  function newGame(names, target, advs) {
+    const g = { phase: 'play', target, players: names.map((name, i) => ({ name, score: 0, off: false, adv: !!(advs && advs[i]) })), cur: 0,
       finalRound: false, finalBy: null, throwId: 0, msg: '', msgType: '' };
     resetTurn(g); return g;
   }
@@ -485,7 +491,7 @@
     const players = [];
     for (const p of s.players) {
       if (!p || typeof p !== 'object' || !isInt(p.score, 0, 1e7)) return null;
-      players.push({ name: clean(p.name, 20) || '?', score: p.score, off: p.off === true });
+      players.push({ name: clean(p.name, 20) || '?', score: p.score, off: p.off === true, adv: p.adv === true });
     }
     if (!isInt(s.cur, 0, players.length - 1) || !isInt(s.target, 1, 1e7) || !isInt(s.turnPts, 0, 1e7) ||
         !isInt(s.remaining, 1, 6) || !isInt(s.throwId, 0, 1e9)) return null;
@@ -581,12 +587,18 @@
     S.dice.forEach((d, i) => felt.appendChild(dieEl(d, i, animate)));
     markSelection();
   }
+  // nápověda (ztlumení kostek, které nebodují) jen pro hráče, kteří nejsou pokročilí
+  function hintsOn() {
+    if (!S || S.phase !== 'play') return false;
+    if (mode === 'local') return !S.players[S.cur].adv;
+    return myTurn() && !prefs.adv;
+  }
   function markSelection() {
     const vals = S.dice.map(d => d.v), busy = busyNow();
     $('felt').querySelectorAll('.slot').forEach((el, i) => {
       if (!S.dice[i]) return;
       el.classList.toggle('sel', !!S.dice[i].sel);
-      el.classList.toggle('dim', !busy && !S.farkle && deadDie(vals, S.dice[i].v));
+      el.classList.toggle('dim', !busy && !S.farkle && hintsOn() && deadDie(vals, S.dice[i].v));
     });
   }
   function syncDice() {
@@ -632,13 +644,16 @@
 
   // ================= vykreslení hry =================
   function enterGame() {
-    lastThrowId = S.throwId; lastDiceKey = '';
+    lastThrowId = S.throwId; lastDiceKey = ''; lastPhase = S.phase;
     screen('game');
     renderGame();
     keepAwake();
   }
+  let lastPhase = null;
   function renderGame() {
     if (!S || $('game').hidden) return;
+    if (S.phase === 'over' && lastPhase === 'play') confetti();
+    lastPhase = S.phase;
     syncDice();
     const busy = busyNow(), mine = myTurn(), online = mode !== 'local';
     const curP = S.players[S.cur];
@@ -683,7 +698,7 @@
     const felt = $('felt'), fm = $('feltMsg');
     const canFirst = S.phase === 'play' && !thrown && !busy && mine;
     felt.classList.toggle('tappable', canFirst);
-    fm.textContent = S.phase === 'over' ? 'Konec hry'
+    fm.textContent = S.phase === 'over' ? winnerText()
       : (!thrown ? (mine ? `${curP.name}, klepni a hoď` : `Na tahu je ${curP.name}`) : '');
 
     const roll = $('roll'), bankBtn = $('bank'), actions = $('actions');
@@ -715,26 +730,84 @@
     }
   }
 
+  function winnerText() {
+    const best = Math.max(...S.players.map(p => p.score));
+    const win = S.players.filter(p => p.score === best).map(p => p.name);
+    return win.length > 1 ? 'Remíza!' : `🏆 ${win[0]}`;
+  }
+
+  // ================= konfety pro vítěze =================
+  function confetti() {
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cv = document.createElement('canvas');
+    cv.className = 'confetti';
+    document.body.appendChild(cv);
+    const c = cv.getContext('2d'), dpr = Math.min(2, window.devicePixelRatio || 1);
+    const W = innerWidth, H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; c.scale(dpr, dpr);
+    const colors = ['#E24750', '#FFD45C', '#2E9E6A', '#3D7DD8', '#F28C28', '#B05CD6', '#FFFFFF'];
+    const felt = $('felt').getBoundingClientRect();
+    const cx = felt.left + felt.width / 2, cy = felt.top + felt.height / 2;
+    const N = reduce ? 60 : 220, parts = [];
+    for (let i = 0; i < N; i++) {
+      // dvě dávky: výbuch z misky a déšť shora
+      const burst = i < N * 0.55;
+      const a = Math.random() * Math.PI * 2, sp = 4 + Math.random() * 9;
+      parts.push({
+        x: burst ? cx : Math.random() * W, y: burst ? cy : -20 - Math.random() * H * 0.5,
+        vx: burst ? Math.cos(a) * sp : (Math.random() - 0.5) * 2, vy: burst ? Math.sin(a) * sp - 6 : 2 + Math.random() * 3,
+        w: 6 + Math.random() * 6, h: 8 + Math.random() * 10, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.35,
+        tilt: Math.random() * 6, vt: 0.05 + Math.random() * 0.1, col: colors[i % colors.length], round: Math.random() < 0.25
+      });
+    }
+    const start = performance.now(), DUR = reduce ? 2500 : 5500;
+    function frame(now) {
+      const t = now - start;
+      c.clearRect(0, 0, W, H);
+      const fade = t > DUR - 1000 ? Math.max(0, (DUR - t) / 1000) : 1;
+      c.globalAlpha = fade;
+      for (const p of parts) {
+        p.vx *= 0.985; p.vy = p.vy * 0.985 + 0.22;
+        p.x += p.vx + Math.sin(p.tilt) * 0.6; p.y += p.vy; p.r += p.vr; p.tilt += p.vt;
+        c.save(); c.translate(p.x, p.y); c.rotate(p.r);
+        c.fillStyle = p.col;
+        if (p.round) { c.beginPath(); c.arc(0, 0, p.w / 2, 0, Math.PI * 2); c.fill(); }
+        else c.fillRect(-p.w / 2, -p.h / 2 * Math.abs(Math.cos(p.tilt)), p.w, p.h * Math.abs(Math.cos(p.tilt)));
+        c.restore();
+      }
+      if (t < DUR) requestAnimationFrame(frame); else cv.remove();
+    }
+    requestAnimationFrame(frame);
+    if (navigator.vibrate) navigator.vibrate([40, 60, 40, 60, 120]);
+  }
+
   // ================= hra na jednom telefonu =================
-  function readNames() { return [...$('names').querySelectorAll('input')].map((el, i) => clean(el.value, 20) || `Hráč ${i + 1}`); }
-  function renderNames(list) {
+  function readNames() { return [...$('names').querySelectorAll('input.nm')].map((el, i) => clean(el.value, 20) || `Hráč ${i + 1}`); }
+  function readAdvs() { return [...$('names').querySelectorAll('input.adv')].map(el => el.checked); }
+  function renderNames(list, advs) {
+    advs = advs || [];
     const box = $('names');
     box.textContent = '';
     list.forEach((nm, i) => {
       const row = document.createElement('div'); row.className = 'row';
       const num = document.createElement('span'); num.className = 'num'; num.textContent = (i + 1) + '.';
-      const inp = document.createElement('input'); inp.maxLength = 20; inp.autocomplete = 'off'; inp.value = nm;
+      const inp = document.createElement('input'); inp.className = 'nm'; inp.maxLength = 20; inp.autocomplete = 'off'; inp.value = nm;
+      const lab = document.createElement('label'); lab.className = 'advl';
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'adv'; cb.checked = !!advs[i];
+      lab.append(cb, document.createTextNode('pokročilý'));
       inp.setAttribute('aria-label', `Jméno hráče ${i + 1}`);
       const del = document.createElement('button'); del.className = 'del'; del.textContent = '×';
       del.setAttribute('aria-label', 'Odebrat hráče'); del.disabled = list.length <= 2;
-      del.onclick = () => { const cur = [...box.querySelectorAll('input')].map(e => e.value); cur.splice(i, 1); renderNames(cur); };
-      row.append(num, inp, del); box.appendChild(row);
+      del.onclick = () => { const cur = readRaw(), a = readAdvs(); cur.splice(i, 1); a.splice(i, 1); renderNames(cur, a); };
+      row.append(num, inp, lab, del); box.appendChild(row);
     });
     $('addP').hidden = list.length >= MAX_PLAYERS;
   }
+  const readRaw = () => [...$('names').querySelectorAll('input.nm')].map(e => e.value);
   function openSetup() {
     mode = 'local';
-    renderNames(Array.isArray(prefs.names) && prefs.names.length >= 2 ? prefs.names.slice(0, MAX_PLAYERS).map(n => clean(n, 20)) : ['Hráč 1', 'Hráč 2']);
+    renderNames(Array.isArray(prefs.names) && prefs.names.length >= 2 ? prefs.names.slice(0, MAX_PLAYERS).map(n => clean(n, 20)) : ['Hráč 1', 'Hráč 2'],
+      Array.isArray(prefs.advs) ? prefs.advs.map(Boolean) : []);
     $('target').value = isInt(prefs.target, MIN_BANK, 1e6) ? prefs.target : 1000;
     $('setupMsg').textContent = '';
     screen('setup');
@@ -742,8 +815,9 @@
   function startLocal() {
     const names = readNames(), t = parseInt($('target').value, 10);
     if (!isInt(t, MIN_BANK, 1e6)) { $('setupMsg').textContent = `Cíl musí být aspoň ${MIN_BANK} b.`; return; }
-    prefs.names = names; prefs.target = t; savePrefs();
-    mode = 'local'; S = newGame(names, t); saveLocal(); enterGame();
+    const advs = readAdvs();
+    prefs.names = names; prefs.advs = advs; prefs.target = t; savePrefs();
+    mode = 'local'; S = newGame(names, t, advs); saveLocal(); enterGame();
   }
 
   // ================= online: Firebase =================
@@ -839,7 +913,7 @@
   // ================= online: zakladatel =================
   function openHost() {
     mode = 'host';
-    $('hostName').value = cleanName(prefs.myName);
+    $('hostName').value = cleanName(prefs.myName); $('hostAdv').checked = !!prefs.adv;
     $('hostTarget').value = isInt(prefs.target, MIN_BANK, 1e6) ? prefs.target : 1000;
     $('hostForm').hidden = false; $('hostRoom').hidden = true; $('hostStatus').textContent = '';
     $('makeRoom').disabled = false;
@@ -849,7 +923,7 @@
     const name = cleanName($('hostName').value), t = parseInt($('hostTarget').value, 10);
     if (!name) { $('hostStatus').textContent = 'Zadej svoje jméno.'; return; }
     if (!isInt(t, MIN_BANK, 1e6)) { $('hostStatus').textContent = `Cíl musí být aspoň ${MIN_BANK} b.`; return; }
-    prefs.myName = name; prefs.target = t; savePrefs();
+    prefs.myName = name; prefs.target = t; prefs.adv = $('hostAdv').checked; savePrefs();
     myName = name; hostTarget = t; me = 0;
     $('makeRoom').disabled = true;
     $('hostStatus').textContent = 'Připojuji se…';
@@ -972,7 +1046,7 @@
   let hostSeen = 0, hostWatch = null;
   function openJoin() {
     mode = 'guest';
-    $('joinName').value = cleanName(prefs.myName);
+    $('joinName').value = cleanName(prefs.myName); $('joinAdv').checked = !!prefs.adv;
     $('joinCode').value = '';
     $('joinForm').hidden = false; $('joinRoom').hidden = true; $('joinStatus').textContent = '';
     $('joinBtn').disabled = false;
@@ -983,7 +1057,7 @@
     const code = $('joinCode').value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (!name) { $('joinStatus').textContent = 'Zadej svoje jméno.'; return; }
     if (!CODE_RE.test(code)) { $('joinStatus').textContent = 'Kód má 6 znaků (písmena a číslice).'; return; }
-    prefs.myName = name; savePrefs(); myName = name;
+    prefs.myName = name; prefs.adv = $('joinAdv').checked; savePrefs(); myName = name;
     $('joinBtn').disabled = true;
     $('joinStatus').textContent = 'Připojuji se…';
     try {
@@ -1058,8 +1132,8 @@
   $('goJoin').onclick = () => { $('homeMsg').textContent = ''; openJoin(); };
   $('setupBack').onclick = () => screen('home');
   $('addP').onclick = () => {
-    const cur = [...$('names').querySelectorAll('input')].map(e => e.value);
-    if (cur.length < MAX_PLAYERS) { cur.push(`Hráč ${cur.length + 1}`); renderNames(cur); }
+    const cur = readRaw(), a = readAdvs();
+    if (cur.length < MAX_PLAYERS) { cur.push(`Hráč ${cur.length + 1}`); a.push(false); renderNames(cur, a); }
   };
   $('start').onclick = startLocal;
   $('makeRoom').onclick = makeRoom;
