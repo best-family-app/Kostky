@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-0yofgRTf+Is1us5ayD87C7SgjxWiGc4EcmhF/f/8X0U=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-95jSDdzA8ERb/d525pcM0AoWiYx327k8AJxjFkwPP2I=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -245,6 +245,7 @@
     <button class="btn alt" id="goHost">Založit online hru</button>
     <button class="btn alt" id="goJoin">Připojit se k online hře</button>
     <p class="msg bad" id="homeMsg"></p>
+    <p class="sub" id="authState" hidden>✓ Toto zařízení smí zakládat hry · <button class="link" id="authRevoke" style="padding:0">zrušit oprávnění</button></p>
     <details>
       <summary>Pravidla</summary>
       <ul>
@@ -268,6 +269,16 @@
         <tr><td>5× / 6× stejné číslo</td><td>trojice × 4 / × 8</td></tr>
       </table>
     </details>
+  </section>
+
+  <!-- OVĚŘENÍ ZAKLADATELE -->
+  <section id="auth" class="form" hidden>
+    <button class="link back" id="authBack">← Zpět</button>
+    <h1>Oprávnění zakladatele</h1>
+    <p class="sub">Zakládat hry můžou jen ověřená zařízení. Zadej klíč zakladatele, stačí to jednou na každém zařízení. Připojit se do hry může kdokoli bez klíče.</p>
+    <label>Klíč zakladatele <input id="authKey" type="password" maxlength="200" autocomplete="off"></label>
+    <button class="btn" id="authBtn">Ověřit</button>
+    <p class="msg" id="authMsg" aria-live="polite"></p>
   </section>
 
   <!-- HRA NA JEDNOM ZAŘÍZENÍ: NASTAVENÍ -->
@@ -2833,7 +2844,7 @@ var qrcode = function() {
   const myTurn = () => mode === 'local' || (S && S.cur === me);
   const busyNow = () => Date.now() < animUntil;
 
-  const SCREENS = ['home', 'setup', 'host', 'join', 'game'];
+  const SCREENS = ['home', 'setup', 'host', 'join', 'game', 'auth'];
   function screen(name) { SCREENS.forEach(id => $(id).hidden = id !== name); }
 
   const prefs = (() => { try { return JSON.parse(store.get('kostky-nastaveni') || '{}') || {}; } catch (e) { return {}; } })();
@@ -3128,6 +3139,47 @@ var qrcode = function() {
     buzz([40, 60, 40, 60, 120]);
   }
 
+  // ================= oprávnění zakladatele =================
+  // Zakládat hry smí jen zařízení ověřené klíčem zakladatele. Ověření proběhne na serveru
+  // (pravidla Firebase porovnají klíč s tajnou hodnotou), klíč se v zařízení neukládá.
+  let afterAuth = null;
+  const hostOk = () => prefs.hostOk === true;
+  function renderHome() { $('authState').hidden = !hostOk(); }
+  function requireHost(next) {
+    if (hostOk()) { next(); verifyHostBg(); return; }
+    afterAuth = next;
+    $('authKey').value = ''; $('authMsg').textContent = ''; $('authBtn').disabled = false;
+    screen('auth');
+    prewarm();
+    setTimeout(() => $('authKey').focus(), 50);
+  }
+  async function doAuth() {
+    const key = $('authKey').value;
+    if (key.length < 4 || key.length > 200) { $('authMsg').textContent = 'Zadej klíč zakladatele.'; return; }
+    $('authBtn').disabled = true;
+    try {
+      const uid = await ensureOnline($('authMsg'));
+      $('authMsg').textContent = 'Ověřuji…';
+      await withTimeout(db().ref('hosts/' + uid).set(key), 12000);
+      $('authKey').value = '';
+      prefs.hostOk = true; savePrefs(); renderHome();
+      const next = afterAuth; afterAuth = null;
+      if (next) next(); else screen('home');
+    } catch (e) {
+      const c = String((e && (e.code || e.message)) || '');
+      $('authMsg').textContent = /permission/i.test(c) ? 'Nesprávný klíč zakladatele.' : fbErr(e);
+      $('authBtn').disabled = false;
+    }
+  }
+  // ověří na pozadí, že oprávnění pořád platí (správce ho mohl ve Firebase zrušit)
+  async function verifyHostBg() {
+    try {
+      const uid = await fbInit();
+      const v = await withTimeout(db().ref('hosts/' + uid).once('value'), 15000);
+      if (!v.exists()) { prefs.hostOk = false; savePrefs(); renderHome(); }
+    } catch (e) {}
+  }
+
   // ================= hra na jednom zařízení =================
   function readNames() { return [...$('names').querySelectorAll('input.nm')].map((el, i) => clean(el.value, 20) || `Hráč ${i + 1}`); }
   function readAdvs() { return [...$('names').querySelectorAll('input.adv')].map(el => el.checked); }
@@ -3346,7 +3398,13 @@ var qrcode = function() {
       }
       if (!ok) throw new Error('permission');
     } catch (e) {
-      $('hostStatus').textContent = fbErr(e); $('makeRoom').disabled = false; roomRef = null; return;
+      roomRef = null; $('makeRoom').disabled = false;
+      if (/permission/i.test(String(e && (e.code || e.message)))) {
+        // zařízení oprávnění ztratilo (např. zrušené ve Firebase)
+        prefs.hostOk = false; savePrefs(); renderHome();
+        $('hostStatus').textContent = 'Toto zařízení nemá oprávnění zakládat hry. Vrať se a ověř ho klíčem zakladatele.';
+      } else $('hostStatus').textContent = fbErr(e);
+      return;
     }
     $('code').textContent = roomCode;
     drawQR(joinLink(roomCode));
@@ -3592,8 +3650,16 @@ var qrcode = function() {
   }
 
   // ================= ovládání =================
-  $('goLocal').onclick = () => { $('homeMsg').textContent = ''; openSetup(); };
-  $('goHost').onclick = () => { $('homeMsg').textContent = ''; openHost(); };
+  $('goLocal').onclick = () => { $('homeMsg').textContent = ''; requireHost(openSetup); };
+  $('goHost').onclick = () => { $('homeMsg').textContent = ''; requireHost(openHost); };
+  $('authBtn').onclick = doAuth;
+  $('authKey').addEventListener('keydown', e => { if (e.key === 'Enter') doAuth(); });
+  $('authBack').onclick = () => { afterAuth = null; screen('home'); };
+  $('authRevoke').onclick = async () => {
+    if (!confirm('Zrušit oprávnění zakládat hry na tomto zařízení?')) return;
+    prefs.hostOk = false; savePrefs(); renderHome();
+    try { const uid = await fbInit(); await db().ref('hosts/' + uid).remove(); } catch (e) {}
+  };
   $('goJoin').onclick = () => { $('homeMsg').textContent = ''; openJoin(); };
   $('setupBack').onclick = () => screen('home');
   $('addP').onclick = () => {
@@ -3636,8 +3702,8 @@ var qrcode = function() {
     openJoin();
     $('joinCode').value = joinCode;
     if ($('joinName').value) joinGame(); else $('joinName').focus();
-  } else if (restored) { mode = 'local'; S = restored; enterGame(); }
-  else screen('home');
+  } else if (restored && hostOk()) { mode = 'local'; S = restored; enterGame(); verifyHostBg(); }
+  else { renderHome(); screen('home'); }
 })();
 </script>
 </body>
