@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-21QgLXGXwMt2LuUZfjxmoleeQMRi905TJ+4hxC57kE8=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-eAOGa4q0M3b+msAsjgA9j13ZNWdVNRp274+Tjn7/nxU=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -229,6 +229,19 @@
   #joinCode { text-transform: uppercase; letter-spacing: .3rem; font-weight: 700; text-align: center; }
   .player .name small { color: var(--muted); font-weight: 400; }
   .player.off { opacity: .55; }
+  #game.ended .tray { flex: 0 0 auto; height: 8.5rem; min-height: 0; }
+  .stats { background: var(--card); border-radius: .8rem; padding: .6rem .7rem; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+  .stwrap { overflow: auto; max-height: 40vh; }
+  .sttbl { width: 100%; border-collapse: collapse; font-size: .92rem; font-variant-numeric: tabular-nums; }
+  .sttbl th, .sttbl td { padding: .3rem .45rem; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .sttbl th { position: sticky; top: 0; background: var(--card); font-weight: 600; max-width: 6rem; overflow: hidden; text-overflow: ellipsis; }
+  .sttbl .rn { text-align: left; color: var(--muted); }
+  .sttbl th:first-child { text-align: left; color: var(--muted); font-weight: 400; }
+  .sttbl .zero, .sttbl .na { color: var(--muted); }
+  .sttbl .top { font-weight: 700; }
+  .sttbl .win { color: var(--ok); font-weight: 700; }
+  .sttbl tr.tot td { border-bottom: none; font-weight: 700; padding-top: .45rem; }
+  .stser { margin: .5rem 0 0; font-size: .92rem; color: var(--muted); }
   .topbtns { display: flex; align-items: center; gap: .15rem; }
   .icon { background: none; border: none; font-size: 1.25rem; padding: .3rem .4rem; border-radius: .5rem; cursor: pointer; line-height: 1; }
   .icon[aria-pressed="false"] { opacity: .6; }
@@ -352,6 +365,7 @@
     </div>
     <div class="scores" id="scores"></div>
     <div class="tray"><div class="felt" id="felt"><div class="felt-msg" id="feltMsg"></div></div></div>
+    <div id="stats" class="stats" hidden></div>
     <div class="aside" id="aside"></div>
     <div class="turn"><strong id="turnPts"></strong><span id="selInfo"></span></div>
     <p class="msg" id="msg" aria-live="polite"></p>
@@ -2734,8 +2748,9 @@ var qrcode = function() {
 
   // ================= pravidla hry (běží u zakladatele / lokálně) =================
   function newGame(names, target, advs) {
-    const g = { phase: 'play', target, players: names.map((name, i) => ({ name, score: 0, off: false, adv: !!(advs && advs[i]) })), cur: 0,
-      finalRound: false, finalBy: null, throwId: 0, turns: 0, msg: '', msgType: '' };
+    const g = { phase: 'play', target, players: names.map((name, i) => ({ name, score: 0, off: false, adv: !!(advs && advs[i]), hist: [] })), cur: 0,
+      finalRound: false, finalBy: null, throwId: 0, turns: 0, msg: '', msgType: '',
+      series: { games: 0, wins: names.map(() => 0) } };
     resetTurn(g); return g;
   }
   function resetTurn(g) { g.turnPts = 0; g.remaining = 6; g.dice = []; g.aside = []; g.farkle = false; g.lost = 0; g.pending = 0; g.bonusReady = false; }
@@ -2745,7 +2760,7 @@ var qrcode = function() {
   function apply(g, a) {
     if (a.t === 'rematch') {
       if (g.phase !== 'over') return false;
-      g.players.forEach(p => p.score = 0);
+      g.players.forEach(p => { p.score = 0; p.hist = []; });
       g.phase = 'play'; g.finalRound = false; g.finalBy = null; g.turns = 0;
       g.cur = g.players.findIndex(p => !p.off); if (g.cur < 0) g.cur = 0;
       resetTurn(g); setMsg(g, ''); return true;
@@ -2758,7 +2773,7 @@ var qrcode = function() {
       d.sel = !d.sel; return true;
     }
     if (a.t === 'bank') return doBank(g);
-    if (a.t === 'pass') { if (!g.farkle) return false; endTurn(g, '', ''); return true; }
+    if (a.t === 'pass') { if (!g.farkle) return false; endTurn(g, '', '', 0); return true; }
     return false;
   }
 
@@ -2817,15 +2832,18 @@ var qrcode = function() {
     const total = g.turnPts + pts;
     if (total < MIN_BANK) return false;
     g.players[g.cur].score += total;
-    endTurn(g, `${g.players[g.cur].name} zapisuje ${total} b.`, 'good');
+    endTurn(g, `${g.players[g.cur].name} zapisuje ${total} b.`, 'good', total);
     return true;
   }
 
   const tahu = n => n + (n === 1 ? ' tah' : (n >= 2 && n <= 4 ? ' tahy' : ' tahů'));
-  function endTurn(g, text, type) {
+  // banked: body zapsané v tahu (0 = nic nepadlo, -1 = přeskočený tah)
+  function endTurn(g, text, type, banked) {
     const p = g.cur, mine = g.players[p], n = g.players.length;
     let t = text, ty = type;
     g.turns = (g.turns || 0) + 1;
+    if (!Array.isArray(mine.hist)) mine.hist = [];
+    if (mine.hist.length < 300) mine.hist.push(isInt(banked, -1, 1e6) ? banked : 0);
     if (!g.finalRound && mine.score >= g.target) {
       g.finalRound = true; g.finalBy = p;
       if (n > 1) t = (t ? t + ' ' : '') + `${mine.name} dosáhl cíle! Ostatní mají ještě poslední tah.`;
@@ -2844,6 +2862,10 @@ var qrcode = function() {
       else t = win.length > 1 ? `Remíza: ${win.join(', ')} (${best} b.)` : `Vítězem je ${win[0]} s ${best} b.! 🎉`;
       ty = 'good';
       g.dice = []; g.aside = []; g.turnPts = 0; g.farkle = false;
+      // série odvet: počet her a výher
+      if (!g.series || !Array.isArray(g.series.wins) || g.series.wins.length !== n) g.series = { games: 0, wins: g.players.map(() => 0) };
+      g.series.games++;
+      g.players.forEach((x, i) => { if (x.score === best) g.series.wins[i]++; });
     } else {
       g.cur = next; resetTurn(g);
     }
@@ -2858,7 +2880,8 @@ var qrcode = function() {
     const players = [];
     for (const p of s.players) {
       if (!p || typeof p !== 'object' || !isInt(p.score, 0, 1e7)) return null;
-      players.push({ name: clean(p.name, 20) || '?', score: p.score, off: p.off === true, adv: p.adv === true });
+      const hist = Array.isArray(p.hist) && p.hist.length <= 300 && p.hist.every(v => isInt(v, -1, 1e6)) ? p.hist.slice() : [];
+      players.push({ name: clean(p.name, 20) || '?', score: p.score, off: p.off === true, adv: p.adv === true, hist });
     }
     if (!isInt(s.cur, 0, players.length - 1) || !isInt(s.target, 1, 1e7) || !isInt(s.turnPts, 0, 1e7) ||
         !isInt(s.remaining, 1, 6) || !isInt(s.throwId, 0, 1e9)) return null;
@@ -2879,6 +2902,8 @@ var qrcode = function() {
       finalBy: isInt(s.finalBy, 0, MAX_PLAYERS - 1) ? s.finalBy : null, turnPts: s.turnPts, remaining: s.remaining,
       dice, aside, farkle: s.farkle === true, lost: isInt(s.lost, 0, 1e7) ? s.lost : 0, throwId: s.throwId, turns: isInt(s.turns, 0, 1e6) ? s.turns : 0,
       pending: isInt(s.pending, 1, 6) ? s.pending : 0, bonusReady: s.bonusReady === true,
+      series: (s.series && isInt(s.series.games, 0, 1e5) && Array.isArray(s.series.wins) && s.series.wins.length === players.length && s.series.wins.every(w => isInt(w, 0, 1e5)))
+        ? { games: s.series.games, wins: s.series.wins.slice() } : { games: 0, wins: players.map(() => 0) },
       msg: clean(s.msg, 200), msgType: (s.msgType === 'good' || s.msgType === 'bad') ? s.msgType : ''
     };
   }
@@ -3058,6 +3083,8 @@ var qrcode = function() {
       el.querySelector('i').style.width = Math.min(100, p.score / S.target * 100) + '%';
     });
 
+    renderStats();
+    $('game').classList.toggle('ended', S.phase === 'over');
     $('aside').innerHTML = S.aside.length
       ? S.aside.map(g => `<div class="group">${g.vals.map(v => `<div class="mini${v === 1 ? ' one' : ''}">${faceHTML(v)}</div>`).join('')}<b>+${g.pts}</b></div>`).join('')
       : `<span class="empty">${S.phase === 'play' ? 'Odložené kostky se ukážou tady' : ''}</span>`;
@@ -3121,6 +3148,40 @@ var qrcode = function() {
     }
   }
 
+  const vyher = n => n + (n === 1 ? ' výhra' : (n >= 2 && n <= 4 ? ' výhry' : ' výher'));
+  // statistika po skončení hry: body po kolech a série odvet (vše přes textContent)
+  function renderStats() {
+    const box = $('stats');
+    if (S.phase !== 'over') { box.hidden = true; return; }
+    box.hidden = false; box.textContent = '';
+    const best = bestScore(), n = S.players.length;
+    const rounds = Math.max(0, ...S.players.map(p => (p.hist || []).length));
+    const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+    const wrap = el('div', 'stwrap'), tbl = el('table', 'sttbl');
+    const head = el('tr');
+    head.appendChild(el('th', '', 'Kolo'));
+    S.players.forEach(p => head.appendChild(el('th', p.score === best ? 'win' : '', p.name)));
+    tbl.appendChild(head);
+    for (let r = 0; r < rounds; r++) {
+      const tr = el('tr');
+      tr.appendChild(el('td', 'rn', String(r + 1)));
+      const vals = S.players.map(p => (p.hist || [])[r]);
+      const top = Math.max(0, ...vals.filter(v => v > 0));
+      vals.forEach(v => tr.appendChild(v == null ? el('td', 'na', '') : v < 0 ? el('td', 'na', '–') : el('td', v === 0 ? 'zero' : (v === top ? 'top' : ''), String(v))));
+      tbl.appendChild(tr);
+    }
+    const tot = el('tr', 'tot');
+    tot.appendChild(el('td', 'rn', 'Celkem'));
+    S.players.forEach(p => tot.appendChild(el('td', p.score === best ? 'win' : '', String(p.score))));
+    tbl.appendChild(tot);
+    wrap.appendChild(tbl); box.appendChild(wrap);
+    const sr = S.series;
+    if (n > 1 && sr && sr.games > 0) {
+      const line = el('p', 'stser');
+      line.textContent = `Série: ${sr.games}. hra · ` + S.players.map((p, i) => `${p.name} ${vyher(sr.wins[i])}`).join(' · ');
+      box.appendChild(line);
+    }
+  }
   const bestScore = () => Math.max(...S.players.map(p => p.score));
   // online slaví jen vítěz na svém zařízení, na jednom zařízení se slaví vždy
   function iWon() { return mode === 'local' || (S.players[me] && S.players[me].score === bestScore()); }
@@ -3563,7 +3624,7 @@ var qrcode = function() {
       roomRef.child('players/' + uid).once('value').then(v => {
         if (v.exists() || !S || p.off) return;
         p.off = true;
-        if (S.phase === 'play' && S.cur === idx) endTurn(S, `${p.name} se odpojil, jeho tah se přeskakuje.`, 'bad');
+        if (S.phase === 'play' && S.cur === idx) endTurn(S, `${p.name} se odpojil, jeho tah se přeskakuje.`, 'bad', -1);
         else setMsg(S, `${p.name} se odpojil.`, 'bad');
         commit();
       }).catch(() => {});
