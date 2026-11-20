@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-fcBXlh0ENpy1hmTaFGWwSqlCweUEfz8orbxS5C1Dp8I=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-1LPr2mw+8L9rG4TGu4l9AV1JaPCE6HvcnPo+1cjuQmc=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -229,6 +229,10 @@
   #joinCode { text-transform: uppercase; letter-spacing: .3rem; font-weight: 700; text-align: center; }
   .player .name small { color: var(--muted); font-weight: 400; }
   .player.off { opacity: .55; }
+  .scan { position: relative; border-radius: .8rem; overflow: hidden; background: #000; aspect-ratio: 1; max-height: 55vh; margin: 0 auto; width: 100%; }
+  .scan video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .scanframe { position: absolute; inset: 18%; border: 3px solid rgba(255,255,255,.9); border-radius: 1rem; box-shadow: 0 0 0 100vmax rgba(0,0,0,.35); pointer-events: none; }
+  .scanstop { position: absolute; left: 50%; bottom: .8rem; transform: translateX(-50%); padding: .55rem 1rem; font-size: .95rem; }
   .chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: -.4rem; }
   .chip { border: none; border-radius: 1rem; padding: .4rem .8rem; background: var(--card); color: var(--text); font: inherit; font-size: .95rem; box-shadow: 0 1px 2px rgba(0,0,0,.2); cursor: pointer; }
   .chip:focus-visible { outline: 3px solid var(--accent); }
@@ -342,6 +346,12 @@
     <div id="joinForm" class="form">
       <label>Tvoje jméno <input id="joinName" maxlength="20" autocomplete="off"></label>
       <div class="chips" id="nameChips" hidden aria-label="Nedávná jména na tomto zařízení"></div>
+      <button class="btn alt" id="scanBtn" type="button" hidden>📷 Naskenovat QR kód hry</button>
+      <div class="scan" id="scanBox" hidden>
+        <video id="scanVideo" playsinline muted></video>
+        <div class="scanframe" aria-hidden="true"></div>
+        <button class="btn alt scanstop" id="scanStop" type="button">Zrušit skenování</button>
+      </div>
       <label>Kód hry <input id="joinCode" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
       <label class="check"><input type="checkbox" id="joinAdv"> Pokročilý hráč (bez nápovědy)</label>
       <button class="btn" id="joinBtn">Připojit</button>
@@ -2920,7 +2930,7 @@ var qrcode = function() {
   const busyNow = () => Date.now() < animUntil;
 
   const SCREENS = ['home', 'setup', 'host', 'join', 'game', 'auth'];
-  function screen(name) { SCREENS.forEach(id => $(id).hidden = id !== name); }
+  function screen(name) { if (name !== 'join') stopScan(); SCREENS.forEach(id => $(id).hidden = id !== name); }
 
   const prefs = (() => { try { return JSON.parse(store.get('kostky-nastaveni') || '{}') || {}; } catch (e) { return {}; } })();
   function savePrefs() { store.set('kostky-nastaveni', JSON.stringify(prefs)); }
@@ -3708,11 +3718,72 @@ var qrcode = function() {
     $('joinName').value = ''; $('joinAdv').checked = !!prefs.adv;
     $('joinCode').value = '';
     renderNameChips();
+    $('scanBtn').hidden = !canScan();
     $('joinForm').hidden = false; $('joinRoom').hidden = true; $('joinStatus').textContent = '';
     $('joinBtn').disabled = false;
     screen('join');
     prewarm();
   }
+  // ===== skenování QR kódu kamerou přímo v aplikaci =====
+  // Kamera se zapne jen po klepnutí, obraz se zpracuje jen v zařízení a po načtení kódu se hned vypne.
+  var scanStream = null, scanTimer = null;
+  const canScan = () => 'BarcodeDetector' in window && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  function codeFromScan(raw) {
+    raw = String(raw || '').trim();
+    if (/^[A-Za-z0-9]{6}$/.test(raw) && CODE_RE.test(raw.toUpperCase())) return raw.toUpperCase();
+    try {
+      const u = new URL(raw);
+      if (u.origin !== location.origin) return '';   // jen odkazy na tuhle hru
+      const m = /^#join=([A-Za-z0-9]{6})$/.exec(u.hash), c = m ? m[1].toUpperCase() : '';
+      return CODE_RE.test(c) ? c : '';
+    } catch (e) { return ''; }
+  }
+  async function startScan() {
+    if (!canScan()) { $('joinStatus').textContent = 'Tady skenování nejde, použij fotoaparát telefonu.'; return; }
+    try {
+      const det = new BarcodeDetector({ formats: ['qr_code'] });
+      scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+      const v = $('scanVideo');
+      v.srcObject = scanStream;
+      $('scanBox').hidden = false; $('scanBtn').hidden = true;
+      $('joinStatus').textContent = 'Namiř kameru na QR kód hry.';
+      await v.play();
+      let wrong = false;
+      const tick = async () => {
+        if (!scanStream) return;
+        try {
+          const found = await det.detect(v);
+          for (const f of found) {
+            const code = codeFromScan(f.rawValue);
+            if (code) {
+              stopScan();
+              $('joinCode').value = code;
+              $('joinStatus').textContent = 'Kód hry načten.';
+              buzz(30);
+              ($('joinName').value ? $('joinBtn') : $('joinName')).focus();
+              return;
+            }
+            if (!wrong) { wrong = true; $('joinStatus').textContent = 'Tohle není QR kód této hry.'; }
+          }
+        } catch (e) {}
+        scanTimer = setTimeout(tick, 250);
+      };
+      tick();
+    } catch (e) {
+      stopScan();
+      $('joinStatus').textContent = (e && e.name === 'NotAllowedError')
+        ? 'Přístup ke kameře není povolený. Povol ho v nastavení aplikace (Oprávnění → Fotoaparát).'
+        : 'Kameru se nepodařilo spustit.';
+    }
+  }
+  function stopScan() {
+    clearTimeout(scanTimer); scanTimer = null;
+    if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+    const v = $('scanVideo'); if (v) v.srcObject = null;
+    if ($('scanBox')) $('scanBox').hidden = true;
+    if ($('scanBtn')) $('scanBtn').hidden = !canScan();
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible') stopScan(); });
   function renderNameChips() {
     const box = $('nameChips'); box.textContent = '';
     const list = (Array.isArray(prefs.recentNames) ? prefs.recentNames : []).map(n => cleanName(n)).filter(Boolean);
@@ -3856,6 +3927,8 @@ var qrcode = function() {
   $('startOnline').onclick = startOnline;
   $('hostBack').onclick = () => { if (roomRef) cancelHost(); else { mode = 'local'; screen('home'); } };
   $('joinBtn').onclick = joinGame;
+  $('scanBtn').onclick = startScan;
+  $('scanStop').onclick = () => { stopScan(); $('joinStatus').textContent = ''; };
   $('joinBack').onclick = () => leaveOnline('', 'me');
   $('joinCode').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); });
   $('topAction').onclick = () => {
