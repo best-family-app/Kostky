@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-hvBWXPrs3MHZGS+sd2/EpIlFm3gxFjQFvLbJP4Nwadw=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-AC11+zafeprvB1qGR05OQ+1gIZtpxdk9h0PebUkXy38=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -255,6 +255,9 @@
   #joinCode { text-transform: uppercase; letter-spacing: .3rem; font-weight: 700; text-align: center; }
   .player .name small { color: var(--muted); font-weight: 400; }
   .player.off { opacity: .55; }
+  .verbar { position: fixed; left: .6rem; right: .6rem; bottom: calc(.6rem + env(safe-area-inset-bottom, 0px)); z-index: 65; max-width: 30rem; margin: 0 auto;
+    background: #8E1F26; color: #fff; border-radius: .9rem; padding: .7rem .8rem; display: flex; gap: .7rem; align-items: center; box-shadow: 0 6px 18px rgba(0,0,0,.35); font-size: .95rem; }
+  .verbar .btn { flex: none; padding: .55rem .8rem; font-size: .95rem; background: #fff; color: #8E1F26; box-shadow: none; }
   .pulltab { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 2px); left: 50%; transform: translateX(-50%); z-index: 40;
     width: 3.2rem; height: 1.1rem; border: none; background: none; cursor: pointer; padding: 0; }
   .pulltab::after { content: ""; display: block; width: 2.4rem; height: .3rem; margin: 0 auto; border-radius: 1rem; background: var(--muted); opacity: .45; }
@@ -460,6 +463,7 @@
   </section>
 </main>
 <button class="pulltab" id="pullTab" aria-label="Otevřít nastavení"></button>
+<div class="verbar" id="verBar" hidden role="alert"><span id="verText"></span><button class="btn" id="verBtn">Aktualizovat</button></div>
 <div class="sheetbg" id="sheetBg" hidden></div>
 <section class="sheet" id="sheet" aria-hidden="true" aria-label="Nastavení">
   <div class="sheethead"><h2>Nastavení</h2><button class="icon" id="sheetClose" aria-label="Zavřít nastavení">✕</button></div>
@@ -2791,6 +2795,7 @@ var qrcode = function() {
 <script>'use strict';
 (() => {
   const MIN_BANK = 350, MAX_PLAYERS = 6;
+  const APP_VER = 30;   // verze online protokolu: všichni ve hře musí mít stejnou
   const layouts = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
   const faceRot = { 1: [0, 0], 2: [-90, 0], 3: [0, -90], 4: [0, 90], 5: [90, 0], 6: [0, 180] };
   const SLOTS_WIDE = [[17, 29], [50, 27], [83, 29], [17, 72], [50, 74], [83, 72]];
@@ -3146,8 +3151,11 @@ var qrcode = function() {
       const s = validateState(o.s);
       if (!s || !validUids(o.uids, s.players.length)) return;
       if (!fn(s)) return;                               // zrušit transakci
-      return JSON.stringify({ s, uids: o.uids });
-    }).catch(() => {});
+      return JSON.stringify({ s, uids: o.uids, ver: APP_VER });
+    }).then(r => r, e => {
+      const c = String((e && (e.code || e.message)) || '');
+      toast(/permission/i.test(c) ? 'Server tah odmítl. Zkontroluj, že máš nejnovější verzi aplikace.' : 'Tah se nepodařilo uložit. Zkontroluj internet a zkus to znovu.');
+    });
   }
   // přítomnost hráčů online: uzel players/<uid> existuje, dokud je hráč v aplikaci
   let presence = {};
@@ -3975,10 +3983,10 @@ var qrcode = function() {
   let suppressLeaveUntil = 0;
   function fullRoom() {
     const r = { host: myUid, created: firebase.database.ServerValue.TIMESTAMP, lobby: lobbyJSON() };
-    if (S) r.state = JSON.stringify({ s: S, uids });
+    if (S) r.state = JSON.stringify({ s: S, uids, ver: APP_VER });
     return r;
   }
-  const lobbyJSON = () => JSON.stringify({ names: lobby.map(p => p.name), uids: lobby.map(p => p.uid) });
+  const lobbyJSON = () => JSON.stringify({ names: lobby.map(p => p.name), uids: lobby.map(p => p.uid), ver: APP_VER });
   function writeLobby() { renderLobby(); if (roomRef) roomRef.child('lobby').set(lobbyJSON()).catch(() => {}); }
   function renderLobby() {
     lobbyRows($('hostLobby'), lobby.map(p => p.name), kick);
@@ -4039,7 +4047,7 @@ var qrcode = function() {
     enterGame(); broadcast();
   }
   function broadcast() {
-    if (roomRef && S) roomRef.child('state').set(JSON.stringify({ s: S, uids })).catch(() => {});
+    if (roomRef && S) roomRef.child('state').set(JSON.stringify({ s: S, uids, ver: APP_VER })).catch(() => {});
   }
   function backToLobby() {
     if (S && S.phase === 'play' && !confirm('Ukončit rozehranou hru a vrátit všechny do čekárny?')) return;
@@ -4236,12 +4244,26 @@ var qrcode = function() {
       $('joinStatus').textContent = fbErr(e); $('joinBtn').disabled = false;
     }
   }
+  // různé verze aplikace spolu online nehrají: upozornit a nabídnout aktualizaci
+  function checkVersion(v) {
+    const bar = $('verBar');
+    if (!isInt(v, 1, 1e6) || v === APP_VER) { bar.hidden = true; return; }
+    bar.hidden = false;
+    if (v > APP_VER) {
+      $('verText').textContent = 'Máš starší verzi aplikace než zakladatel hry. Bez aktualizace nemusí hra reagovat.';
+      $('verBtn').hidden = false;
+    } else {
+      $('verText').textContent = 'Zakladatel hry má starší verzi aplikace. Ať ji úplně zavře a znovu otevře.';
+      $('verBtn').hidden = true;
+    }
+  }
   function onLobby(str) {
     if (!roomRef || mode !== 'guest') return; // zpráva dorazila až po odchodu ze hry
     if (str === '#closed') { leaveOnline('Zakladatel hru ukončil.', 'me'); return; }
     if (S) return;
     const o = parseJSON(str, 3000);
     if (!o || !Array.isArray(o.names) || o.names.length < 1 || o.names.length > MAX_PLAYERS || !validUids(o.uids, o.names.length)) return;
+    checkVersion(o.ver);
     const names = o.names.map(n => cleanName(n) || '?');
     $('joinForm').hidden = true; $('joinRoom').hidden = false; $('joinBtn').disabled = false;
     lobbyRows($('guestLobby'), names, null);
@@ -4265,6 +4287,7 @@ var qrcode = function() {
     }
     const o = parseJSON(str, 30000);
     if (!o) return;
+    if (mode === 'guest') checkVersion(o.ver);
     const s = validateState(o.s);
     if (!s || !validUids(o.uids, s.players.length)) return;
     const idx = o.uids.indexOf(myUid);
@@ -4468,6 +4491,7 @@ var qrcode = function() {
     if (!pull.up && dy > 8) sheetTo(Math.min(dy * 0.9, sheet.offsetHeight), false);
     if (pull.up && dy < 0) sheet.style.transition = 'none', sheet.style.transform = `translateY(${dy}px)`;
   }, { passive: true });
+  document.addEventListener('touchcancel', () => { if (pull) { pull = null; if (sheetOpen) { sheet.style.transform = ''; sheet.style.transition = ''; } else sheetTo(null, true); } });
   document.addEventListener('touchend', () => {
     if (!pull) return;
     const p = pull; pull = null;
@@ -4475,6 +4499,10 @@ var qrcode = function() {
     if (p.dy > 80) openSheet(); else sheetTo(null, true);
   });
   $('pullTab').onclick = openSheet;
+  $('verBtn').onclick = async () => {
+    try { const r = await navigator.serviceWorker.getRegistration(); if (r) await r.update(); } catch (e) {}
+    location.reload();
+  };
   $('openSettings').onclick = openSheet;
   $('sheetClose').onclick = closeSheet;
   sheetBg.onclick = closeSheet;
