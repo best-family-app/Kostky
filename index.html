@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-mCAtsqGEdnl+OAqDQTGNRKWcaq/thazsclo4NJZlI0M='; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-0yofgRTf+Is1us5ayD87C7SgjxWiGc4EcmhF/f/8X0U=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -3184,7 +3184,6 @@ var qrcode = function() {
         if (!window.firebase || !firebase.initializeApp) throw new Error('sdk');
         if (!firebase.apps.length) {
           firebase.initializeApp(FB_CONFIG);
-          try { firebase.database.INTERNAL.forceWebSockets(); } catch (e) {}
         }
         const auth = firebase.auth();
         const off = auth.onAuthStateChanged(u => { if (u) { off(); resolve(u.uid); } });
@@ -3218,13 +3217,16 @@ var qrcode = function() {
   }
   async function ensureOnline(statusEl) {
     statusEl.textContent = 'Přihlašuji…';
-    const uid = await withTimeout(fbInit(), 15000);
+    let uid;
+    try { uid = await withTimeout(fbInit(), 20000); }
+    catch (e) { throw (e && e.code) ? e : new Error('auth-timeout'); }
     prewarm();
     if (!fbConnected) {
       statusEl.textContent = 'Spojuji se se serverem…';
       if (!(await waitConnected(3000))) {
         nudge();
-        if (!(await waitConnected(10000))) throw new Error('network');
+        statusEl.textContent = 'Spojuji se se serverem (2. pokus)…';
+        if (!(await waitConnected(20000))) throw new Error('db-timeout');
       }
     }
     return uid;
@@ -3235,6 +3237,8 @@ var qrcode = function() {
   }
   function fbErr(e) {
     const c = String((e && (e.code || e.message)) || '');
+    if (c === 'auth-timeout') return 'Přihlášení k serveru nedoběhlo. Zkus to znovu, případně obnov stránku.';
+    if (c === 'db-timeout') return 'Nepodařilo se spojit s databází hry. Zkus to znovu, případně obnov stránku.';
     if (/network/i.test(c)) return 'Nejde se spojit se serverem. Zkontroluj internet.';
     if (/admin-restricted|operation-not-allowed/i.test(c)) return 'Ve Firebase není zapnuté anonymní přihlášení.';
     if (/permission/i.test(c)) return 'Server akci odmítl (oprávnění).';
