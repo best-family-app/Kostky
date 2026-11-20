@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-tkpL5oEs5PImI7vHaVmGwYNODGP+IhhFIk1x6avtOrQ='; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-GyP94459XkM8LmCMJ80y+JYZSiQ8fSwTN5iaFEsxCu4='; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -226,6 +226,10 @@
   #joinCode { text-transform: uppercase; letter-spacing: .3rem; font-weight: 700; text-align: center; }
   .player .name small { color: var(--muted); font-weight: 400; }
   .player.off { opacity: .55; }
+  .topbtns { display: flex; align-items: center; gap: .15rem; }
+  .icon { background: none; border: none; font-size: 1.25rem; padding: .3rem .4rem; border-radius: .5rem; cursor: pointer; line-height: 1; }
+  .icon[aria-pressed="false"] { opacity: .6; }
+  .icon:focus-visible { outline: 3px solid var(--accent); }
   .qr { align-self: center; width: min(62vw, 15rem); height: auto; aspect-ratio: 1; border-radius: .8rem; box-shadow: 0 1px 4px rgba(0,0,0,.25); image-rendering: pixelated; }
   .confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }
   .names .advl, .check { display: flex !important; flex-direction: row !important; align-items: center; gap: .35rem; color: var(--muted); font-size: .9rem; white-space: nowrap; }
@@ -321,7 +325,11 @@
   <section id="game" hidden style="display:flex;flex-direction:column;gap:.7rem;flex:1;min-height:0">
     <div class="top">
       <span id="goal" style="color:var(--muted);font-size:.95rem"></span>
-      <button class="link" id="topAction"></button>
+      <div class="topbtns">
+        <button class="icon" id="soundBtn"></button>
+        <button class="icon" id="vibeBtn"></button>
+        <button class="link" id="topAction"></button>
+      </div>
     </div>
     <div class="scores" id="scores"></div>
     <div class="tray"><div class="felt" id="felt"><div class="felt-msg" id="feltMsg"></div></div></div>
@@ -2907,10 +2915,11 @@ var qrcode = function() {
     if (S.dice.length && S.throwId !== lastThrowId) {
       lastThrowId = S.throwId;
       animUntil = Date.now() + 1400;
+      const mineThrow = myTurn();
       renderDice(true);
       playRoll(S.dice.length);
       setTimeout(() => {
-        if (navigator.vibrate) navigator.vibrate(S && S.farkle ? [60, 80, 60] : 25);
+        if (mineThrow) buzz(S && S.farkle ? [60, 80, 60] : 25);
         renderGame();
       }, 1420);
     } else if (key !== lastDiceKey) renderDice(false);
@@ -2935,9 +2944,18 @@ var qrcode = function() {
     const g = ctx.createGain(); g.gain.value = vol;
     src.connect(bp).connect(g).connect(ctx.destination); src.start(ctx.currentTime + at);
   }
+  const soundOn = () => prefs.sound !== false;
+  const vibeOn = () => prefs.vibe !== false;
+  function buzz(pattern) { try { if (vibeOn() && navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
+  function renderToggles() {
+    const sb = $('soundBtn'), vb = $('vibeBtn');
+    sb.textContent = soundOn() ? '🔊' : '🔇'; sb.setAttribute('aria-pressed', soundOn()); sb.setAttribute('aria-label', soundOn() ? 'Vypnout zvuk' : 'Zapnout zvuk');
+    vb.textContent = vibeOn() ? '📳' : '📴'; vb.setAttribute('aria-pressed', vibeOn()); vb.setAttribute('aria-label', vibeOn() ? 'Vypnout vibrace' : 'Zapnout vibrace');
+    vb.hidden = !navigator.vibrate;
+  }
   function playRoll(n) {
     try {
-      if (!ctx) return;
+      if (!ctx || !soundOn()) return;
       if (ctx.state === 'suspended') ctx.resume();
       for (let i = 0; i < n * 3; i++) clack(0.3 + Math.random() * 0.8, 0.9 - (i / (n * 3)) * 0.75);
     } catch (e) {}
@@ -2946,6 +2964,7 @@ var qrcode = function() {
   // ================= vykreslení hry =================
   function enterGame() {
     lastThrowId = S.throwId; lastDiceKey = ''; lastPhase = S.phase;
+    renderToggles();
     screen('game');
     renderGame();
     keepAwake();
@@ -3042,6 +3061,7 @@ var qrcode = function() {
   }
   function fanfare() {
     try {
+      if (!soundOn()) return;
       unlockAudio(); if (!ctx) return;
       const t0 = ctx.currentTime + 0.05;
       const notes = [[523.25, 0, .14], [659.25, .15, .14], [783.99, .3, .14], [1046.5, .45, .9], [783.99, .45, .9], [659.25, .45, .9]];
@@ -3098,7 +3118,7 @@ var qrcode = function() {
       if (t < DUR) requestAnimationFrame(frame); else cv.remove();
     }
     requestAnimationFrame(frame);
-    if (navigator.vibrate) navigator.vibrate([40, 60, 40, 60, 120]);
+    buzz([40, 60, 40, 60, 120]);
   }
 
   // ================= hra na jednom telefonu =================
@@ -3155,7 +3175,10 @@ var qrcode = function() {
     fbReady = new Promise((resolve, reject) => {
       try {
         if (!window.firebase || !firebase.initializeApp) throw new Error('sdk');
-        if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+        if (!firebase.apps.length) {
+          firebase.initializeApp(FB_CONFIG);
+          try { firebase.database.INTERNAL.forceWebSockets(); } catch (e) {}
+        }
         const auth = firebase.auth();
         const off = auth.onAuthStateChanged(u => { if (u) { off(); resolve(u.uid); } });
         auth.signInAnonymously().catch(reject);
@@ -3164,6 +3187,12 @@ var qrcode = function() {
     return fbReady;
   }
   const db = () => firebase.database();
+  // spojení se otevře už při otevření obrazovky, ne až po kliknutí
+  let warm = false;
+  function prewarm() {
+    if (warm) return;
+    fbInit().then(() => { warm = true; db().ref('.info/connected').on('value', () => {}); }).catch(() => {});
+  }
   function fbErr(e) {
     const c = String((e && (e.code || e.message)) || '');
     if (/network/i.test(c)) return 'Nejde se spojit se serverem. Zkontroluj internet.';
@@ -3197,7 +3226,12 @@ var qrcode = function() {
   function leaveOnline(text, removeWhat) {
     const ref = roomRef;
     detachAll();
-    if (ref && removeWhat === 'room') ref.remove().catch(() => {});
+    clearTimeout(graceTimer);
+    if (ref && removeWhat === 'room') {
+      ref.onDisconnect().cancel().catch(() => {});
+      // nejdřív dát ostatním vědět, pak místnost smazat
+      ref.child('lobby').set('#closed').catch(() => {}).then(() => ref.remove()).catch(() => {});
+    }
     if (ref && removeWhat === 'me' && myUid) {
       const me_ = ref.child('players/' + myUid);
       me_.onDisconnect().cancel().catch(() => {});
@@ -3238,6 +3272,7 @@ var qrcode = function() {
     $('hostForm').hidden = false; $('hostRoom').hidden = true; $('hostStatus').textContent = '';
     $('makeRoom').disabled = false;
     screen('host');
+    prewarm();
   }
   async function makeRoom() {
     const name = cleanName($('hostName').value), t = parseInt($('hostTarget').value, 10);
@@ -3269,12 +3304,31 @@ var qrcode = function() {
     $('hostStatus').textContent = 'Čekám na hráče.';
     renderLobby();
     const players = roomRef.child('players');
+    roomRef.onDisconnect().remove().catch(() => {});
+    let wasDown = false;
+    listen(db().ref('.info/connected'), 'value', async s => {
+      if (s.val() !== true) { wasDown = true; return; }
+      if (!roomRef) return;
+      roomRef.onDisconnect().remove().catch(() => {});
+      if (!wasDown) return;
+      wasDown = false;
+      try {
+        const h = await roomRef.child('host').once('value');
+        if (!h.exists() && roomRef) { suppressLeaveUntil = Date.now() + 20000; await roomRef.set(fullRoom()); }
+      } catch (e) {}
+    });
     listen(players, 'child_added', s => onPlayerJoin(s.key, s.val()));
     listen(players, 'child_changed', s => onPlayerJoin(s.key, s.val()));
     listen(players, 'child_removed', s => onPlayerLeave(s.key));
     listen(roomRef.child('actions'), 'child_added', s => { const a = s.val(); s.ref.remove().catch(() => {}); onAction(a); });
     // značka „zakladatel žije“ pro ostatní
     heartbeat = setInterval(() => { if (roomRef) roomRef.child('created').set(firebase.database.ServerValue.TIMESTAMP).catch(() => {}); }, 20000);
+  }
+  let suppressLeaveUntil = 0;
+  function fullRoom() {
+    const r = { host: myUid, created: firebase.database.ServerValue.TIMESTAMP, lobby: lobbyJSON() };
+    if (S) r.state = JSON.stringify({ s: S, uids });
+    return r;
   }
   const lobbyJSON = () => JSON.stringify({ names: lobby.map(p => p.name), uids: lobby.map(p => p.uid) });
   function writeLobby() { renderLobby(); if (roomRef) roomRef.child('lobby').set(lobbyJSON()).catch(() => {}); }
@@ -3303,6 +3357,7 @@ var qrcode = function() {
     }
   }
   function onPlayerLeave(uid) {
+    if (Date.now() < suppressLeaveUntil) return;
     if (!S) {
       const before = lobby.length;
       lobby = lobby.filter(p => p.uid !== uid);
@@ -3379,7 +3434,7 @@ var qrcode = function() {
   }
 
   // ================= online: hráč, který se připojuje =================
-  let hostSeen = 0, hostWatch = null;
+  let hostSeen = 0, hostWatch = null, graceTimer = null, hostPresent = false, hostSeenOnce = false;
   function openJoin() {
     mode = 'guest';
     $('joinName').value = cleanName(prefs.myName); $('joinAdv').checked = !!prefs.adv;
@@ -3387,6 +3442,7 @@ var qrcode = function() {
     $('joinForm').hidden = false; $('joinRoom').hidden = true; $('joinStatus').textContent = '';
     $('joinBtn').disabled = false;
     screen('join');
+    prewarm();
   }
   async function joinGame() {
     const name = cleanName($('joinName').value);
@@ -3404,7 +3460,7 @@ var qrcode = function() {
       const meRef = roomRef.child('players/' + myUid);
       await meRef.onDisconnect().remove();
       await meRef.set(name);
-      roomCode = code;
+      roomCode = code; hostPresent = true; hostSeenOnce = false;
       // po výpadku signálu se znovu přihlásí do hry
       listen(db().ref('.info/connected'), 'value', s => {
         if (s.val() === true && roomRef) { meRef.onDisconnect().remove().then(() => meRef.set(myName)).catch(() => {}); }
@@ -3417,7 +3473,21 @@ var qrcode = function() {
       });
       listen(roomRef.child('lobby'), 'value', s => onLobby(s.val()));
       listen(roomRef.child('state'), 'value', s => onState(s.val()));
-      listen(roomRef.child('host'), 'value', s => { if (!s.exists()) leaveOnline('Zakladatel hru ukončil.', 'me'); });
+      listen(roomRef.child('host'), 'value', s => {
+        if (!s.exists()) {
+          hostPresent = false;
+          clearTimeout(graceTimer);
+          graceTimer = setTimeout(() => { if (!hostPresent) leaveOnline('Zakladatel hru ukončil.', 'me'); }, 90000);
+          if (S) { setMsg(S, 'Zakladatel hry je nedostupný, čekám na něj…', 'bad'); renderGame(); }
+          else $('joinStatus').textContent = 'Zakladatel je nedostupný, čekám na něj…';
+        } else {
+          const back = !hostPresent;
+          hostPresent = true; clearTimeout(graceTimer);
+          // místnost byla obnovena: znovu se přihlásit
+          if (back && hostSeenOnce) meRef.onDisconnect().remove().then(() => meRef.set(myName)).catch(() => {});
+          hostSeenOnce = true;
+        }
+      });
       hostSeen = Date.now();
       listen(roomRef.child('created'), 'value', () => { hostSeen = Date.now(); });
       hostWatch = setInterval(() => {
@@ -3429,6 +3499,7 @@ var qrcode = function() {
     }
   }
   function onLobby(str) {
+    if (str === '#closed') { leaveOnline('Zakladatel hru ukončil.', 'me'); return; }
     if (S) return;
     const o = parseJSON(str, 3000);
     if (!o || !Array.isArray(o.names) || o.names.length < 1 || o.names.length > MAX_PLAYERS || !validUids(o.uids, o.names.length)) return;
@@ -3441,7 +3512,14 @@ var qrcode = function() {
   }
   function onState(str) {
     if (str == null) {
-      if (S) { S = null; screen('join'); $('joinStatus').textContent = 'Čekám, až zakladatel spustí hru.'; }
+      // stav zmizí i při výpadku zakladatele; do čekárny jen když zakladatel hru opravdu ukončil
+      setTimeout(() => {
+        if (S && hostPresent && roomRef) {
+          roomRef.child('state').once('value').then(v => {
+            if (!v.exists() && S && hostPresent) { S = null; releaseWake(); screen('join'); $('joinStatus').textContent = 'Čekám, až zakladatel spustí hru.'; }
+          }).catch(() => {});
+        }
+      }, 1500);
       return;
     }
     const o = parseJSON(str, 30000);
@@ -3472,6 +3550,8 @@ var qrcode = function() {
     if (cur.length < MAX_PLAYERS) { cur.push(`Hráč ${cur.length + 1}`); a.push(false); renderNames(cur, a); }
   };
   $('start').onclick = startLocal;
+  $('soundBtn').onclick = () => { prefs.sound = !soundOn(); savePrefs(); renderToggles(); };
+  $('vibeBtn').onclick = () => { prefs.vibe = !vibeOn(); savePrefs(); renderToggles(); if (vibeOn()) buzz(30); };
   $('makeRoom').onclick = makeRoom;
   $('share').onclick = shareCode;
   $('startOnline').onclick = startOnline;
