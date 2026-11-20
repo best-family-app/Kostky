@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-GyP94459XkM8LmCMJ80y+JYZSiQ8fSwTN5iaFEsxCu4='; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-WSvpuki0H4oj68ffPIjF2uBZL7ozXtMq6JZ1gFR0ABw='; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -241,7 +241,7 @@
   <!-- ÚVOD -->
   <section id="home" class="form" hidden>
     <h1>Kostky</h1>
-    <button class="btn" id="goLocal">Hrát na jednom telefonu</button>
+    <button class="btn" id="goLocal">Hrát na jednom zařízení</button>
     <button class="btn alt" id="goHost">Založit online hru</button>
     <button class="btn alt" id="goJoin">Připojit se k online hře</button>
     <p class="msg bad" id="homeMsg"></p>
@@ -254,6 +254,7 @@
         <li>Když hod nepřinese nic, přicházíš o body z celého tahu a hraje další hráč.</li>
         <li>Když dáš stranou všech 6 kostek, házíš znovu všemi šesti a body z tahu se dál sčítají.</li>
         <li>Když někdo dosáhne cíle, každý další hráč v pořadí má ještě jeden poslední tah. Vyhrává nejvyšší skóre.</li>
+        <li>Hrát jde i v jednom hráči: cílem je dosáhnout zadaného počtu bodů na co nejméně tahů.</li>
         <li>Začátečníkům hra ztlumí kostky, které v hodu nebodují. Pokročilý hráč tuhle nápovědu nemá.</li>
       </ul>
       <table>
@@ -269,11 +270,11 @@
     </details>
   </section>
 
-  <!-- HRA NA JEDNOM TELEFONU: NASTAVENÍ -->
+  <!-- HRA NA JEDNOM ZAŘÍZENÍ: NASTAVENÍ -->
   <section id="setup" class="form" hidden>
     <button class="link back" id="setupBack">← Zpět</button>
-    <h1>Hra na jednom telefonu</h1>
-    <div class="sub">Hráči (2 až 6)</div>
+    <h1>Hra na jednom zařízení</h1>
+    <div class="sub">Hráči (1 až 6)</div>
     <div class="names" id="names"></div>
     <button class="btn alt" id="addP">+ Přidat hráče</button>
     <label>Body potřebné k vítězství <input id="target" type="number" inputmode="numeric" min="350" step="50"></label>
@@ -295,7 +296,7 @@
       <div class="sub">Kód hry, pošli ho ostatním:</div>
       <div class="code" id="code">······</div>
       <canvas id="qr" class="qr" width="10" height="10" hidden aria-label="QR kód s odkazem do hry"></canvas>
-      <p class="sub" id="qrHint" hidden style="text-align:center">Ostatní ho naskenují fotoaparátem telefonu a rovnou se připojí.</p>
+      <p class="sub" id="qrHint" hidden style="text-align:center">Ostatní ho naskenují fotoaparátem mobilu nebo tabletu a rovnou se připojí.</p>
       <button class="btn alt" id="share">Sdílet odkaz do hry</button>
       <div class="sub" id="hostCount">Hráči</div>
       <div class="lobby" id="hostLobby"></div>
@@ -2704,7 +2705,7 @@ var qrcode = function() {
   // ================= pravidla hry (běží u zakladatele / lokálně) =================
   function newGame(names, target, advs) {
     const g = { phase: 'play', target, players: names.map((name, i) => ({ name, score: 0, off: false, adv: !!(advs && advs[i]) })), cur: 0,
-      finalRound: false, finalBy: null, throwId: 0, msg: '', msgType: '' };
+      finalRound: false, finalBy: null, throwId: 0, turns: 0, msg: '', msgType: '' };
     resetTurn(g); return g;
   }
   function resetTurn(g) { g.turnPts = 0; g.remaining = 6; g.dice = []; g.aside = []; g.farkle = false; g.lost = 0; }
@@ -2715,7 +2716,7 @@ var qrcode = function() {
     if (a.t === 'rematch') {
       if (g.phase !== 'over') return false;
       g.players.forEach(p => p.score = 0);
-      g.phase = 'play'; g.finalRound = false; g.finalBy = null;
+      g.phase = 'play'; g.finalRound = false; g.finalBy = null; g.turns = 0;
       g.cur = g.players.findIndex(p => !p.off); if (g.cur < 0) g.cur = 0;
       resetTurn(g); setMsg(g, ''); return true;
     }
@@ -2766,12 +2767,14 @@ var qrcode = function() {
     return true;
   }
 
+  const tahu = n => n + (n === 1 ? ' tah' : (n >= 2 && n <= 4 ? ' tahy' : ' tahů'));
   function endTurn(g, text, type) {
     const p = g.cur, mine = g.players[p], n = g.players.length;
     let t = text, ty = type;
+    g.turns = (g.turns || 0) + 1;
     if (!g.finalRound && mine.score >= g.target) {
       g.finalRound = true; g.finalBy = p;
-      t = (t ? t + ' ' : '') + `${mine.name} dosáhl cíle! Ostatní mají ještě poslední tah.`;
+      if (n > 1) t = (t ? t + ' ' : '') + `${mine.name} dosáhl cíle! Ostatní mají ještě poslední tah.`;
     }
     let next = p, over = false;
     for (let k = 0; k < n; k++) {
@@ -2783,7 +2786,8 @@ var qrcode = function() {
       g.phase = 'over';
       const best = Math.max(...g.players.map(x => x.score));
       const win = g.players.filter(x => x.score === best).map(x => x.name);
-      t = win.length > 1 ? `Remíza: ${win.join(', ')} (${best} b.)` : `Vítězem je ${win[0]} s ${best} b.! 🎉`;
+      if (n === 1) t = `Cíl splněn za ${tahu(g.turns)}! 🎉`;
+      else t = win.length > 1 ? `Remíza: ${win.join(', ')} (${best} b.)` : `Vítězem je ${win[0]} s ${best} b.! 🎉`;
       ty = 'good';
       g.dice = []; g.aside = []; g.turnPts = 0; g.farkle = false;
     } else {
@@ -2796,7 +2800,7 @@ var qrcode = function() {
   function validateState(s) {
     if (!s || typeof s !== 'object' || Array.isArray(s)) return null;
     if (s.phase !== 'play' && s.phase !== 'over') return null;
-    if (!Array.isArray(s.players) || s.players.length < 2 || s.players.length > MAX_PLAYERS) return null;
+    if (!Array.isArray(s.players) || s.players.length < 1 || s.players.length > MAX_PLAYERS) return null;
     const players = [];
     for (const p of s.players) {
       if (!p || typeof p !== 'object' || !isInt(p.score, 0, 1e7)) return null;
@@ -2819,7 +2823,7 @@ var qrcode = function() {
     return {
       phase: s.phase, target: s.target, players, cur: s.cur, finalRound: s.finalRound === true,
       finalBy: isInt(s.finalBy, 0, MAX_PLAYERS - 1) ? s.finalBy : null, turnPts: s.turnPts, remaining: s.remaining,
-      dice, aside, farkle: s.farkle === true, lost: isInt(s.lost, 0, 1e7) ? s.lost : 0, throwId: s.throwId,
+      dice, aside, farkle: s.farkle === true, lost: isInt(s.lost, 0, 1e7) ? s.lost : 0, throwId: s.throwId, turns: isInt(s.turns, 0, 1e6) ? s.turns : 0,
       msg: clean(s.msg, 200), msgType: (s.msgType === 'good' || s.msgType === 'bad') ? s.msgType : ''
     };
   }
@@ -2978,7 +2982,9 @@ var qrcode = function() {
     const busy = busyNow(), mine = myTurn(), online = mode !== 'local';
     const curP = S.players[S.cur];
 
-    $('goal').textContent = `Hra do ${S.target} b.${S.finalRound && S.phase === 'play' ? ' · poslední kolo' : ''}`;
+    $('goal').textContent = S.players.length === 1
+      ? `Cíl ${S.target} b. · ${S.phase === 'over' ? tahu(S.turns || 0) : 'tah č. ' + ((S.turns || 0) + 1)}`
+      : `Hra do ${S.target} b.${S.finalRound && S.phase === 'play' ? ' · poslední kolo' : ''}`;
     $('topAction').textContent = mode === 'local' ? 'Resetovat hru' : (mode === 'host' ? 'Ukončit hru' : 'Odejít');
 
     const sc = $('scores'), n = S.players.length;
@@ -3051,11 +3057,12 @@ var qrcode = function() {
   }
 
   const bestScore = () => Math.max(...S.players.map(p => p.score));
-  // online slaví jen vítěz na svém telefonu, na jednom telefonu se slaví vždy
+  // online slaví jen vítěz na svém zařízení, na jednom zařízení se slaví vždy
   function iWon() { return mode === 'local' || (S.players[me] && S.players[me].score === bestScore()); }
   function winnerText() {
     const best = bestScore();
     const win = S.players.filter(p => p.score === best).map(p => p.name);
+    if (S.players.length === 1) return `🏆 Hotovo za ${tahu(S.turns || 0)}`;
     if (mode !== 'local' && iWon()) return win.length > 1 ? '🏆 Remíza, sdílíš vítězství!' : '🏆 Vítězíš, gratulace!';
     return win.length > 1 ? `🏆 Remíza: ${win.join(', ')}` : `🏆 Vítěz: ${win[0]}`;
   }
@@ -3121,7 +3128,7 @@ var qrcode = function() {
     buzz([40, 60, 40, 60, 120]);
   }
 
-  // ================= hra na jednom telefonu =================
+  // ================= hra na jednom zařízení =================
   function readNames() { return [...$('names').querySelectorAll('input.nm')].map((el, i) => clean(el.value, 20) || `Hráč ${i + 1}`); }
   function readAdvs() { return [...$('names').querySelectorAll('input.adv')].map(el => el.checked); }
   function renderNames(list, advs) {
@@ -3137,7 +3144,7 @@ var qrcode = function() {
       lab.append(cb, document.createTextNode('pokročilý'));
       inp.setAttribute('aria-label', `Jméno hráče ${i + 1}`);
       const del = document.createElement('button'); del.className = 'del'; del.textContent = '×';
-      del.setAttribute('aria-label', 'Odebrat hráče'); del.disabled = list.length <= 2;
+      del.setAttribute('aria-label', 'Odebrat hráče'); del.disabled = list.length <= 1;
       del.onclick = () => { const cur = readRaw(), a = readAdvs(); cur.splice(i, 1); a.splice(i, 1); renderNames(cur, a); };
       row.append(num, inp, lab, del); box.appendChild(row);
     });
@@ -3146,7 +3153,7 @@ var qrcode = function() {
   const readRaw = () => [...$('names').querySelectorAll('input.nm')].map(e => e.value);
   function openSetup() {
     mode = 'local';
-    renderNames(Array.isArray(prefs.names) && prefs.names.length >= 2 ? prefs.names.slice(0, MAX_PLAYERS).map(n => clean(n, 20)) : ['Hráč 1', 'Hráč 2'],
+    renderNames(Array.isArray(prefs.names) && prefs.names.length >= 1 ? prefs.names.slice(0, MAX_PLAYERS).map(n => clean(n, 20)) : ['Hráč 1', 'Hráč 2'],
       Array.isArray(prefs.advs) ? prefs.advs.map(Boolean) : []);
     $('target').value = isInt(prefs.target, MIN_BANK, 1e6) ? prefs.target : 1000;
     $('setupMsg').textContent = '';
