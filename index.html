@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-WSvpuki0H4oj68ffPIjF2uBZL7ozXtMq6JZ1gFR0ABw='; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-mCAtsqGEdnl+OAqDQTGNRKWcaq/thazsclo4NJZlI0M='; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -3196,9 +3196,42 @@ var qrcode = function() {
   const db = () => firebase.database();
   // spojení se otevře už při otevření obrazovky, ne až po kliknutí
   let warm = false;
+  let fbConnected = false;
   function prewarm() {
     if (warm) return;
-    fbInit().then(() => { warm = true; db().ref('.info/connected').on('value', () => {}); }).catch(() => {});
+    fbInit().then(() => {
+      if (warm) return;
+      warm = true;
+      db().ref('.info/connected').on('value', s => { fbConnected = s.val() === true; });
+    }).catch(() => {});
+  }
+  // vynucené nové spojení (po uspání prohlížeče může SDK čekat na další pokus i desítky vteřin)
+  function nudge() { try { db().goOffline(); db().goOnline(); } catch (e) {} }
+  function waitConnected(ms) {
+    return new Promise(resolve => {
+      if (fbConnected) return resolve(true);
+      const ref = db().ref('.info/connected');
+      const f = s => { if (s.val() === true) { clearTimeout(t); ref.off('value', f); resolve(true); } };
+      const t = setTimeout(() => { ref.off('value', f); resolve(false); }, ms);
+      ref.on('value', f);
+    });
+  }
+  async function ensureOnline(statusEl) {
+    statusEl.textContent = 'Přihlašuji…';
+    const uid = await withTimeout(fbInit(), 15000);
+    prewarm();
+    if (!fbConnected) {
+      statusEl.textContent = 'Spojuji se se serverem…';
+      if (!(await waitConnected(3000))) {
+        nudge();
+        if (!(await waitConnected(10000))) throw new Error('network');
+      }
+    }
+    return uid;
+  }
+  function withTimeout(p, ms) {
+    let t;
+    return Promise.race([p, new Promise((_, rej) => { t = setTimeout(() => rej(new Error('network')), ms); })]).finally(() => clearTimeout(t));
   }
   function fbErr(e) {
     const c = String((e && (e.code || e.message)) || '');
@@ -3269,7 +3302,12 @@ var qrcode = function() {
     navigator.wakeLock.request('screen').then(w => { wake = w; }).catch(() => {});
   }
   function releaseWake() { try { if (wake) wake.release(); } catch (e) {} wake = null; }
-  document.addEventListener('visibilitychange', () => { if (S && mode !== 'local') keepAwake(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || mode === 'local') return;
+    if (S) keepAwake();
+    // po návratu do aplikace hned obnovit spojení, nečekat na SDK
+    if (warm && !fbConnected) nudge();
+  });
 
   // ================= online: zakladatel =================
   function openHost() {
@@ -3290,14 +3328,15 @@ var qrcode = function() {
     $('makeRoom').disabled = true;
     $('hostStatus').textContent = 'Připojuji se…';
     try {
-      myUid = await fbInit();
+      myUid = await ensureOnline($('hostStatus'));
+      $('hostStatus').textContent = 'Zakládám hru…';
       let ok = false;
       for (let k = 0; k < 5 && !ok; k++) {
         roomCode = makeCode();
         roomRef = db().ref('rooms/' + roomCode);
         lobby = [{ uid: myUid, name }];
         try {
-          await roomRef.set({ host: myUid, created: firebase.database.ServerValue.TIMESTAMP, lobby: lobbyJSON() });
+          await withTimeout(roomRef.set({ host: myUid, created: firebase.database.ServerValue.TIMESTAMP, lobby: lobbyJSON() }), 12000);
           ok = true;
         } catch (e) { if (!/permission/i.test(String(e && (e.code || e.message)))) throw e; }
       }
@@ -3460,13 +3499,14 @@ var qrcode = function() {
     $('joinBtn').disabled = true;
     $('joinStatus').textContent = 'Připojuji se…';
     try {
-      myUid = await fbInit();
+      myUid = await ensureOnline($('joinStatus'));
+      $('joinStatus').textContent = 'Hledám hru…';
       roomRef = db().ref('rooms/' + code);
-      const h = await roomRef.child('host').once('value');
+      const h = await withTimeout(roomRef.child('host').once('value'), 12000);
       if (!h.exists()) { roomRef = null; $('joinStatus').textContent = 'Hra s tímto kódem neexistuje.'; $('joinBtn').disabled = false; return; }
       const meRef = roomRef.child('players/' + myUid);
-      await meRef.onDisconnect().remove();
-      await meRef.set(name);
+      await withTimeout(meRef.onDisconnect().remove(), 12000);
+      await withTimeout(meRef.set(name), 12000);
       roomCode = code; hostPresent = true; hostSeenOnce = false;
       // po výpadku signálu se znovu přihlásí do hry
       listen(db().ref('.info/connected'), 'value', s => {
