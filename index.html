@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-J85eO6xgIN9xEBRVn962LTriN5XnzCzYAznOXRaxYF0=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-4KrukIksCmGk1TruAL9tnFv4XsAMaLWu6nYhwc7j0oM=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data:; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -3163,9 +3163,8 @@ var qrcode = function() {
     try {
       const uid = await ensureOnline($('authMsg'));
       $('authMsg').textContent = 'Ověřuji…';
-      await withTimeout(db().ref('hosts/' + uid).set(key), 12000);
-      // jméno zařízení pro správce ve Firebase (když pravidla hostNames chybí, nevadí)
-      db().ref('hostNames/' + uid).set(name).catch(() => {});
+      // záznam zařízení: klíč (ověří pravidla) + jméno, aby ho správce ve Firebase poznal
+      await withTimeout(db().ref('hosts/' + uid).set({ key, name }), 12000);
       $('authKey').value = '';
       prefs.hostOk = true; prefs.myName = name; savePrefs(); renderHome();
       const next = afterAuth; afterAuth = null;
@@ -3663,7 +3662,7 @@ var qrcode = function() {
   $('authRevoke').onclick = async () => {
     if (!confirm('Zrušit oprávnění zakládat hry na tomto zařízení?')) return;
     prefs.hostOk = false; savePrefs(); renderHome();
-    try { const uid = await fbInit(); await db().ref('hostNames/' + uid).remove().catch(() => {}); await db().ref('hosts/' + uid).remove(); } catch (e) {}
+    try { const uid = await fbInit(); await db().ref('hosts/' + uid).remove(); } catch (e) {}
   };
   $('goJoin').onclick = () => { $('homeMsg').textContent = ''; openJoin(); };
   $('setupBack').onclick = () => screen('home');
