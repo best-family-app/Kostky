@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-cUB3NbHTr4WdiHabrvnFHn62uhqj7tUMCkI+5xRXJ2o=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-HctSYTBgIrq7f9PrqTzTMW6QI6t/LUgFxYwAAillZw4=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -85,10 +85,10 @@
   }
   .felt {
     position: relative; overflow: hidden; border-radius: 10px; flex: 1; container-type: size;
-    background-color: #1E5B45;
+    background-color: var(--felt-a);
     background-image:
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .32 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
-      radial-gradient(circle at 50% 40%, #27735A, #164535 75%);
+      radial-gradient(circle at 50% 40%, var(--felt-b), var(--felt-c) 75%);
     box-shadow: inset 0 0 28px rgba(0,0,0,.65), inset 0 4px 8px rgba(0,0,0,.5);
   }
   .felt-msg {
@@ -122,12 +122,12 @@
   .face, .core { position: absolute; }
   .face, .mini {
     border-radius: 15%;
-    background: radial-gradient(circle at 32% 26%, #FFFFFF, #EEEDE8 62%, #D6D4CC);
+    background: radial-gradient(circle at 32% 26%, var(--die-1), var(--die-2) 62%, var(--die-3));
     box-shadow: inset 0 0 calc(var(--s) * .07) rgba(0,0,0,.2), inset 0 0 0 1px rgba(0,0,0,.06);
     display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 15%; gap: 5%;
   }
   .face { inset: 0; backface-visibility: hidden; }
-  .core { inset: 5%; background: #D6D4CC; }
+  .core { inset: 5%; background: var(--die-3); }
   .f1 { transform: translateZ(calc(var(--s) / 2)); }
   .f6 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
   .f3 { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
@@ -138,11 +138,11 @@
   .c3 { transform: rotateX(90deg); }
   .pip {
     border-radius: 50%; visibility: hidden;
-    background: radial-gradient(circle at 42% 38%, #3A3A3A, #0E0E0E 62%);
-    box-shadow: inset 0 calc(var(--s) * .012) calc(var(--s) * .022) rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.8);
+    background: radial-gradient(circle at 42% 38%, var(--pip-1), var(--pip-2) 62%);
+    box-shadow: inset 0 calc(var(--s) * .012) calc(var(--s) * .022) rgba(0,0,0,.75), 0 1px 0 var(--pip-hl);
   }
   .pip.on { visibility: visible; }
-  .one .pip.on { background: radial-gradient(circle at 42% 38%, #E24750, #9C111A 64%); transform: scale(1.5); }
+  .one .pip.on { background: radial-gradient(circle at 42% 38%, var(--one-1), var(--one-2) 64%); transform: scale(1.5); }
 
   .toss.go { animation: slide 1.15s cubic-bezier(.2,.7,.3,1) var(--d) both; }
   .toss.go .lift { animation: hop 1.15s linear var(--d) both; }
@@ -203,11 +203,37 @@
       column-gap: 1rem; row-gap: .5rem; align-content: start;
     }
     #game > * { grid-column: 2; }
-    #game > .tray { grid-column: 1; grid-row: 1 / span 7; height: calc(100dvh - 1rem); min-height: 0; }
+    #game > .tray { grid-column: 1; grid-row: 1 / span 12; height: calc(100dvh - 1rem); min-height: 0; }
+    #game.ended .tray { height: calc(100dvh - 1rem); }
     .scores { --cols: 2 !important; }
     .player { padding: .35rem .5rem; }
     .player .pts, .scores.many .pts { font-size: 1.15rem; }
   }
+
+  /* tablet a počítač na šířku: miska vlevo přes celou výšku, skóre a ovládání vpravo */
+  @media (min-width: 900px) and (orientation: landscape) and (min-height: 521px) {
+    main { max-width: 84rem; padding: 1rem 1.5rem; }
+    #home, #setup, #host, #join, #auth { width: 100%; max-width: 30rem; margin: 0 auto; }
+    #game:not([hidden]) {
+      display: grid !important; grid-template-columns: minmax(0, 1.6fr) minmax(21rem, 1fr); grid-auto-rows: min-content;
+      column-gap: 1.6rem; row-gap: .7rem; align-content: start;
+    }
+    #game > * { grid-column: 2; }
+    #game > .tray { grid-column: 1; grid-row: 1 / span 12; height: calc(100dvh - 2rem); min-height: 0; }
+    #game.ended .tray { height: calc(100dvh - 2rem); }
+    .slot { --s: min(17cqw, 27cqh, 10rem); }
+    .stwrap { max-height: 50vh; }
+  }
+
+  /* vzhled stolu a kostek */
+  :root { --felt-a: #1E5B45; --felt-b: #27735A; --felt-c: #164535;
+          --die-1: #FFFFFF; --die-2: #EEEDE8; --die-3: #D6D4CC; --pip-1: #3A3A3A; --pip-2: #0E0E0E; --pip-hl: rgba(255,255,255,.8); --one-1: #E24750; --one-2: #9C111A; }
+  :root[data-felt="blue"] { --felt-a: #1F4A73; --felt-b: #2B5F91; --felt-c: #142F4C; }
+  :root[data-felt="red"]  { --felt-a: #6E2430; --felt-b: #8A2E3B; --felt-c: #46141C; }
+  :root[data-felt="grey"] { --felt-a: #3A4146; --felt-b: #4B545A; --felt-c: #23282C; }
+  :root[data-dice="red"]   { --die-1: #F0545E; --die-2: #C92A35; --die-3: #9A1C25; --pip-1: #FFFFFF; --pip-2: #E9E4DC; --pip-hl: rgba(0,0,0,.25); --one-1: #FFFFFF; --one-2: #E9E4DC; }
+  :root[data-dice="black"] { --die-1: #4A4A4A; --die-2: #262626; --die-3: #141414; --pip-1: #FFFFFF; --pip-2: #D9D9D9; --pip-hl: rgba(0,0,0,.3); --one-1: #FF5A63; --one-2: #C21E2A; }
+  :root[data-dice="ivory"] { --die-1: #FFF8E8; --die-2: #F1E6CC; --die-3: #D9C9A3; --pip-1: #5A3A20; --pip-2: #2E1C0E; --pip-hl: rgba(255,255,255,.7); --one-1: #2B6CB0; --one-2: #163E6B; }
 </style>
 
 <style>
@@ -229,6 +255,15 @@
   #joinCode { text-transform: uppercase; letter-spacing: .3rem; font-weight: 700; text-align: center; }
   .player .name small { color: var(--muted); font-weight: 400; }
   .player.off { opacity: .55; }
+  .pick { display: flex; align-items: center; gap: .8rem; margin-top: .7rem; }
+  .pick > span { width: 3.5rem; color: var(--muted); font-size: .95rem; }
+  .swatches { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .sw { width: 2.4rem; height: 2.4rem; border-radius: .6rem; border: 2px solid var(--line); cursor: pointer; font-size: 1.4rem; line-height: 1; padding: 0; box-shadow: inset 0 0 6px rgba(0,0,0,.25); }
+  .sw.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .stshare { width: 100%; margin-top: .6rem; padding: .6rem; font-size: 1rem; }
+  .names select.botlvl { font: inherit; font-size: .9rem; padding: .45rem .3rem; border-radius: .6rem; border: none; background: var(--field); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.18); max-width: 7.5rem; }
+  .log { font-size: .88rem; color: var(--muted); display: flex; flex-direction: column; gap: .1rem; margin-top: -.3rem; }
+  .log .new { color: var(--text); }
   .toast { position: fixed; left: 50%; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 60; max-width: 90vw;
     background: rgba(20,24,27,.92); color: #fff; padding: .65rem 1rem; border-radius: .8rem; font-size: .95rem; box-shadow: 0 4px 14px rgba(0,0,0,.35); text-align: center; }
   .slot::before { content: ""; position: absolute; inset: -24%; border-radius: 30%; }
@@ -271,6 +306,11 @@
     <p class="sub" id="installHelp" hidden style="background:var(--card);padding:.7rem .8rem;border-radius:.7rem;line-height:1.4"></p>
     <p class="msg bad" id="homeMsg"></p>
     <p class="sub" id="authState" hidden>✓ Toto zařízení smí zakládat hry · <button class="link" id="authRevoke" style="padding:0">zrušit oprávnění</button></p>
+    <details>
+      <summary>Vzhled stolu a kostek</summary>
+      <div class="pick"><span>Stůl</span><div class="swatches" id="feltPick"></div></div>
+      <div class="pick"><span>Kostky</span><div class="swatches" id="dicePick"></div></div>
+    </details>
     <details>
       <summary>Pravidla</summary>
       <ul>
@@ -315,7 +355,10 @@
     <h1>Hra na jednom zařízení</h1>
     <div class="sub">Hráči (1 až 6)</div>
     <div class="names" id="names"></div>
-    <button class="btn alt" id="addP">+ Přidat hráče</button>
+    <div class="actions">
+      <button class="btn alt" id="addP">+ Přidat hráče</button>
+      <button class="btn alt" id="addBot">+ Přidat počítač 🤖</button>
+    </div>
     <label>Body potřebné k vítězství <input id="target" type="number" inputmode="numeric" min="350" step="50"></label>
     <p class="msg bad" id="setupMsg"></p>
     <button class="btn" id="start">Začít hru</button>
@@ -382,6 +425,7 @@
     <div class="tray"><div class="felt" id="felt"><div class="felt-msg" id="feltMsg"></div></div></div>
     <div id="stats" class="stats" hidden></div>
     <div class="aside" id="aside"></div>
+    <div class="log" id="log" hidden aria-live="polite"></div>
     <div class="turn"><strong id="turnPts"></strong><span id="selInfo"></span></div>
     <p class="msg" id="msg" aria-live="polite"></p>
     <div class="actions" id="actions">
@@ -2748,6 +2792,19 @@ var qrcode = function() {
     const c = counts(vals);
     return c[1] > 0 || c[5] > 0 || c.some((n, f) => f > 0 && n >= 3);
   }
+  // pravděpodobnost, že hod n kostkami nic nepřinese (spočítá se jednou přesně)
+  const riskCache = {};
+  function farkleRisk(n) {
+    if (riskCache[n] != null) return riskCache[n];
+    let bad = 0, total = Math.pow(6, n);
+    const v = new Array(n).fill(1);
+    for (let k = 0; k < total; k++) {
+      let x = k; for (let i = 0; i < n; i++) { v[i] = (x % 6) + 1; x = Math.floor(x / 6); }
+      if (!canScore(v)) bad++;
+    }
+    return (riskCache[n] = bad / total);
+  }
+  const pct = r => (r < 0.1 ? (r * 100).toFixed(1).replace('.', ',') : Math.round(r * 100)) + ' %';
   function deadDie(vals, v) {
     if (isStraight(vals)) return false;
     if (vals.length === 6 && new Set(vals).size === 5) return false; // jde odložit postupku bez jedné
@@ -2763,8 +2820,8 @@ var qrcode = function() {
   }
 
   // ================= pravidla hry (běží u zakladatele / lokálně) =================
-  function newGame(names, target, advs) {
-    const g = { phase: 'play', target, players: names.map((name, i) => ({ name, score: 0, off: false, adv: !!(advs && advs[i]), hist: [] })), cur: 0,
+  function newGame(names, target, advs, bots) {
+    const g = { phase: 'play', target, starter: 0, log: [], players: names.map((name, i) => ({ name, score: 0, off: false, adv: !!(advs && advs[i]), bot: (bots && isInt(bots[i], 0, 2)) ? bots[i] : 0, hist: [] })), cur: 0,
       finalRound: false, finalBy: null, throwId: 0, turns: 0, msg: '', msgType: '',
       series: { games: 0, wins: names.map(() => 0), results: [] } };
     resetTurn(g); return g;
@@ -2778,7 +2835,10 @@ var qrcode = function() {
       if (g.phase !== 'over') return false;
       g.players.forEach(p => { p.score = 0; p.hist = []; });
       g.phase = 'play'; g.finalRound = false; g.finalBy = null; g.turns = 0;
-      g.cur = g.players.findIndex(p => !p.off); if (g.cur < 0) g.cur = 0;
+      // odvetu začíná další hráč v pořadí (začínající má malou výhodu)
+      const n = g.players.length; let st = isInt(g.starter, 0, n - 1) ? g.starter : 0;
+      for (let k = 1; k <= n; k++) { const c = (st + k) % n; if (!g.players[c].off) { st = c; break; } }
+      g.starter = st; g.cur = st; g.log = [];
       resetTurn(g); setMsg(g, ''); return true;
     }
     if (g.phase !== 'play') return false;
@@ -2790,7 +2850,7 @@ var qrcode = function() {
     }
     if (a.t === 'bank') return doBank(g);
     if (a.t === 'pass') { if (!g.farkle) return false; endTurn(g, '', '', 0); return true; }
-    if (a.t === 'skip') { const q = g.players[g.cur]; if (!q.away && !q.off) return false; endTurn(g, `${q.name} není v aplikaci, tah přeskočen.`, 'bad', -1); return true; }
+    if (a.t === 'skip') { const q = g.players[g.cur]; endTurn(g, `${q.name} není v aplikaci, tah přeskočen.`, 'bad', -1); return true; }
     return false;
   }
 
@@ -2811,7 +2871,7 @@ var qrcode = function() {
       g.turnPts += pts;
       g.aside.push({ vals: sel.slice().sort(), pts });
       g.remaining -= sel.length;
-      if (g.remaining === 0) { g.remaining = 6; setMsg(g, 'Všech 6 kostek boduje, házíš znovu všemi!', 'good'); }
+      if (g.remaining === 0) { g.remaining = 6; setMsg(g, 'Všech 6 kostek boduje, házíš znovu všemi!', 'good'); addLog(g, `${g.players[g.cur].name}: všech 6 kostek boduje`); }
       else setMsg(g, '');
       }
     } else setMsg(g, '');
@@ -2829,6 +2889,7 @@ var qrcode = function() {
         grp.vals = grp.vals.concat(v).sort(); grp.pts = 1200;
         g.turnPts += 1200; g.remaining = 6; g.bonusReady = true;
         setMsg(g, 'Postupka doplněna! +1200 b. Můžeš házet znovu všemi šesti, nebo zapsat.', 'good');
+        addLog(g, `${g.players[g.cur].name}: dohodil postupku (+1200)`);
       } else {
         g.farkle = true; g.lost = g.turnPts;
         setMsg(g, `Postupka se nedoplnila (padla ${v}, chyběla ${miss}). ${who} ${g.lost ? `přichází o ${g.lost} b. z tahu` : 'nezískává nic'}.`, 'bad');
@@ -2854,10 +2915,14 @@ var qrcode = function() {
   }
 
   const tahu = n => n + (n === 1 ? ' tah' : (n >= 2 && n <= 4 ? ' tahy' : ' tahů'));
+  function addLog(g, t) { g.log = (Array.isArray(g.log) ? g.log : []).concat(t).slice(-8); }
   // banked: body zapsané v tahu (0 = nic nepadlo, -1 = přeskočený tah)
   function endTurn(g, text, type, banked) {
     const p = g.cur, mine = g.players[p], n = g.players.length;
     let t = text, ty = type;
+    if (banked > 0) addLog(g, `${mine.name}: +${banked} b.`);
+    else if (banked === 0) addLog(g, `${mine.name}: 0 b.${g.lost ? ` (propadlo ${g.lost})` : ''}`);
+    else addLog(g, `${mine.name}: tah přeskočen`);
     g.turns = (g.turns || 0) + 1;
     if (!Array.isArray(mine.hist)) mine.hist = [];
     if (mine.hist.length < 300) mine.hist.push(isInt(banked, -1, 1e6) ? banked : 0);
@@ -2869,7 +2934,7 @@ var qrcode = function() {
     let next = p, wrapped = false;
     for (let k = 0; k < n; k++) {
       next = (next + 1) % n;
-      if (next === 0) wrapped = true;
+      if (next === (g.starter || 0)) wrapped = true;
       if (!g.players[next].off) break;
     }
     const over = g.finalRound && wrapped;
@@ -2903,7 +2968,7 @@ var qrcode = function() {
     for (const p of s.players) {
       if (!p || typeof p !== 'object' || !isInt(p.score, 0, 1e7)) return null;
       const hist = Array.isArray(p.hist) && p.hist.length <= 300 && p.hist.every(v => isInt(v, -1, 1e6)) ? p.hist.slice() : [];
-      players.push({ name: clean(p.name, 20) || '?', score: p.score, off: p.off === true, away: p.away === true, adv: p.adv === true, hist });
+      players.push({ name: clean(p.name, 20) || '?', score: p.score, off: p.off === true, away: p.away === true, adv: p.adv === true, bot: isInt(p.bot, 0, 2) ? p.bot : 0, hist });
     }
     if (!isInt(s.cur, 0, players.length - 1) || !isInt(s.target, 1, 1e7) || !isInt(s.turnPts, 0, 1e7) ||
         !isInt(s.remaining, 1, 6) || !isInt(s.throwId, 0, 1e9)) return null;
@@ -2924,6 +2989,8 @@ var qrcode = function() {
       finalBy: isInt(s.finalBy, 0, MAX_PLAYERS - 1) ? s.finalBy : null, turnPts: s.turnPts, remaining: s.remaining,
       dice, aside, farkle: s.farkle === true, lost: isInt(s.lost, 0, 1e7) ? s.lost : 0, throwId: s.throwId, turns: isInt(s.turns, 0, 1e6) ? s.turns : 0,
       pending: isInt(s.pending, 1, 6) ? s.pending : 0, bonusReady: s.bonusReady === true,
+      starter: isInt(s.starter, 0, players.length - 1) ? s.starter : 0,
+      log: Array.isArray(s.log) ? s.log.slice(-8).map(x => clean(x, 80)).filter(Boolean) : [],
       series: (s.series && isInt(s.series.games, 0, 1e5) && Array.isArray(s.series.wins) && s.series.wins.length === players.length && s.series.wins.every(w => isInt(w, 0, 1e5)))
         ? { games: s.series.games, wins: s.series.wins.slice(),
             results: (Array.isArray(s.series.results) ? s.series.results : []).slice(-50).filter(r => r && Array.isArray(r.s) && r.s.length === players.length && r.s.every(v => isInt(v, 0, 1e7)))
@@ -2947,18 +3014,107 @@ var qrcode = function() {
 
   function act(a) {
     if (!S || busyNow()) return;
-    if (mode === 'guest') {
-      if (!myTurn()) return;
-      sendAction(a);
-      return;
-    }
-    if (!myTurn() && a.t !== 'rematch' && !(a.t === 'skip' && mode === 'host')) return;
-    if (apply(S, a)) commit();
+    if (mode === 'local') { if (curIsBot()) return; if (apply(S, a)) commit(); return; }
+    // online: tah zapisuje přímo zařízení hráče na tahu, zakladatel k tomu není potřeba
+    const skip = a.t === 'skip', rematch = a.t === 'rematch';
+    if (skip && (S.cur === me || !awayOf(S.cur))) return;
+    if (!myTurn() && !skip && !rematch) return;
+    const expectCur = S.cur;
+    txState(s => {
+      if (rematch) return apply(s, a);
+      if (s.cur !== expectCur) return false;           // mezitím se tah změnil
+      if (!skip && s.cur !== me) return false;
+      return apply(s, a);
+    });
   }
   function commit() {
     if (mode === 'local') saveLocal();
-    if (mode === 'host') broadcast();
     renderGame();
+  }
+
+  // ===== počítač jako soupeř (jen hra na jednom zařízení) =====
+  let botTimer = null;
+  const curIsBot = () => mode === 'local' && S && S.phase === 'play' && S.players[S.cur] && S.players[S.cur].bot > 0;
+  function scheduleBot() {
+    if (!curIsBot() || botTimer) return;
+    const wait = busyNow() ? animUntil - Date.now() + 700 : 900;
+    botTimer = setTimeout(botStep, wait);
+  }
+  function botDo(a) { if (S && apply(S, a)) commit(); }
+  const GAIN = [0, 25, 50, 86, 132, 200, 390];   // odhad zisku z dalšího hodu podle počtu kostek
+  function botBankWanted(total, rest, lvl) {
+    const me_ = S.players[S.cur];
+    if (total < MIN_BANK) return false;
+    if (S.finalRound) {                               // v posledním kole musí přeskočit vedoucího
+      const lead = Math.max(...S.players.filter((q, i) => i !== S.cur).map(q => q.score));
+      return me_.score + total > lead;
+    }
+    if (me_.score + total >= S.target) return true;
+    const riskW = lvl === 2 ? 0.75 : 1.35;
+    const cont = (1 - Math.min(0.99, farkleRisk(rest) * riskW)) * (total + GAIN[rest]);
+    return total >= cont;
+  }
+  function botPlan(lvl) {
+    const n = S.dice.length, best = { v: -1 };
+    for (let mask = 1; mask < (1 << n); mask++) {
+      const idx = [], vals = [];
+      for (let i = 0; i < n; i++) if (mask & (1 << i)) { idx.push(i); vals.push(S.dice[i].v); }
+      let pts = scoreDice(vals), partial = false;
+      if (!pts) {
+        if (lvl === 2 && S.turnPts < 300 && partialMissing(S, vals)) partial = true; else continue;
+      }
+      let value, bank = false;
+      if (partial) value = (1 / 6) * (S.turnPts + 1200 + GAIN[6]);
+      else {
+        const total = S.turnPts + pts; let rest = S.remaining - idx.length; if (rest === 0) rest = 6;
+        bank = botBankWanted(total, rest, lvl);
+        const riskW = lvl === 2 ? 0.75 : 1.35;
+        value = bank ? total : (1 - Math.min(0.99, farkleRisk(rest) * riskW)) * (total + GAIN[rest]);
+      }
+      if (value > best.v + 1e-9 || (Math.abs(value - best.v) < 1e-9 && idx.length < best.idx.length)) Object.assign(best, { v: value, idx, bank });
+    }
+    return best;
+  }
+  function botStep() {
+    botTimer = null;
+    if (!curIsBot()) return;
+    if (busyNow()) { scheduleBot(); return; }
+    const lvl = S.players[S.cur].bot, turnKey = S.throwId + ':' + S.cur;
+    if (S.farkle) { botDo({ t: 'pass' }); return; }
+    if (!S.dice.length) { botDo({ t: 'roll' }); return; }
+    if (S.bonusReady) { botDo({ t: botBankWanted(S.turnPts, 6, lvl) ? 'bank' : 'roll' }); return; }
+    const plan = botPlan(lvl);
+    if (!plan.idx) { botDo({ t: 'pass' }); return; }
+    S.dice.forEach(d => { d.sel = false; });
+    renderGame();
+    // kostky vybírá postupně, ať je vidět, co dělá
+    let k = 0;
+    const next = () => {
+      if (!curIsBot() || S.throwId + ':' + S.cur !== turnKey) return;
+      if (k < plan.idx.length) { S.dice[plan.idx[k++]].sel = true; commit(); botTimer = setTimeout(next, 350); return; }
+      botTimer = null;
+      botDo({ t: plan.bank ? 'bank' : 'roll' });
+    };
+    botTimer = setTimeout(next, 350);
+  }
+  // změna sdíleného stavu v databázi (transakce: dva hráči nemůžou zapsat přes sebe)
+  function txState(fn) {
+    if (!roomRef) return Promise.resolve();
+    return roomRef.child('state').transaction(cur => {
+      if (cur == null) return;                          // nic k úpravě
+      const o = parseJSON(cur, 30000); if (!o) return;
+      const s = validateState(o.s);
+      if (!s || !validUids(o.uids, s.players.length)) return;
+      if (!fn(s)) return;                               // zrušit transakci
+      return JSON.stringify({ s, uids: o.uids });
+    }).catch(() => {});
+  }
+  // přítomnost hráčů online: uzel players/<uid> existuje, dokud je hráč v aplikaci
+  let presence = {};
+  function awayOf(i) {
+    if (mode === 'local' || !S) return false;
+    const v = presence[uids[i]];
+    return !(typeof v === 'string' && !v.startsWith('#'));
   }
 
   // ================= kostky na misce =================
@@ -3095,9 +3251,9 @@ var qrcode = function() {
     const busy = busyNow(), mine = myTurn(), online = mode !== 'local';
     const curP = S.players[S.cur];
 
-    $('goal').textContent = S.players.length === 1
+    $('goal').textContent = (mode === 'guest' && me < 0 ? '👀 Divák · ' : '') + (S.players.length === 1
       ? `Cíl ${S.target} b. · ${S.phase === 'over' ? tahu(S.turns || 0) : 'tah č. ' + ((S.turns || 0) + 1)}`
-      : `Hra do ${S.target} b.${S.finalRound && S.phase === 'play' ? ' · poslední kolo' : ''}`;
+      : `Hra do ${S.target} b.${S.finalRound && S.phase === 'play' ? ' · poslední kolo' : ''}`);
     $('topAction').textContent = mode === 'local' ? 'Resetovat hru' : (mode === 'host' ? 'Ukončit hru' : 'Odejít');
 
     const sc = $('scores'), n = S.players.length;
@@ -3111,13 +3267,18 @@ var qrcode = function() {
       el.classList.toggle('off', p.off);
       nm.textContent = p.name;
       if (online && i === me) { const s = document.createElement('small'); s.textContent = ' (ty)'; nm.appendChild(s); }
+      if (p.bot) { const s = document.createElement('small'); s.textContent = ' 🤖'; nm.appendChild(s); }
       if (p.off) { const s = document.createElement('small'); s.textContent = ' odešel'; nm.appendChild(s); }
-      else if (p.away) { const s = document.createElement('small'); s.textContent = ' mimo aplikaci'; nm.appendChild(s); }
+      else if (awayOf(i)) { const s = document.createElement('small'); s.textContent = ' mimo aplikaci'; nm.appendChild(s); }
       el.querySelector('.pts').textContent = p.score;
       el.querySelector('i').style.width = Math.min(100, p.score / S.target * 100) + '%';
     });
 
     renderStats();
+    const lg = $('log'), items = (S.log || []).slice(-3).reverse();
+    lg.textContent = '';
+    if (S.phase === 'play') items.forEach((t, i) => { const d = document.createElement('div'); d.textContent = t; if (i === 0) d.className = 'new'; lg.appendChild(d); });
+    lg.hidden = S.phase !== 'play' || !items.length;
     $('game').classList.toggle('ended', S.phase === 'over');
     $('aside').innerHTML = S.aside.length
       ? S.aside.map(g => `<div class="group">${g.vals.map(v => `<div class="mini${v === 1 ? ' one' : ''}">${faceHTML(v)}</div>`).join('')}<b>+${g.pts}</b></div>`).join('')
@@ -3128,7 +3289,7 @@ var qrcode = function() {
     $('turnPts').textContent = S.phase === 'play' ? `Tah: ${S.turnPts + (selPts || 0)} b.` : '';
     let info = '';
     if (S.phase === 'play' && thrown && !S.farkle && !busy) {
-      if (S.bonusReady) info = 'postupka 1200 b.';
+      if (S.bonusReady) info = 'postupka 1200 b.' + (hintsOn() ? ` · riziko 6 kostek ${pct(farkleRisk(6))}` : '');
       else if (!mine) info = `vybírá ${curP.name}`;
       else if (miss) info = `postupka bez ${miss}: dohoď 1 kostkou`;
       else if (!sel.length) info = 'Klepnutím vyber kostky';
@@ -3138,7 +3299,10 @@ var qrcode = function() {
         for (let f = 2; f <= 6; f++) if (f !== 5 && c[f] > 0 && c[f] < 3) for (let k = 0; k < c[f]; k++) bad.push(f);
         info = bad.length ? `Nebodují: ${bad.join(', ')}` : 'Stranou jen 1, 5 nebo trojice';
       }
-      else info = `výběr +${selPts} b.`;
+      else {
+        info = `výběr +${selPts} b.`;
+        if (hintsOn()) { let rest = S.remaining - sel.length; if (rest === 0) rest = 6; info += ` · riziko dalšího hodu ${pct(farkleRisk(rest))}`; }
+      }
     }
     $('selInfo').textContent = info;
     const msg = $('msg');
@@ -3152,20 +3316,33 @@ var qrcode = function() {
       : (!thrown ? (mine ? `${curP.name}, klepni a hoď` : `Na tahu je ${curP.name}`) : '');
 
     const roll = $('roll'), bankBtn = $('bank'), actions = $('actions');
+    if (curIsBot()) {
+      scheduleBot();
+      if (!thrown) fm.textContent = `${curP.name} hází…`;
+      return ((label) => { actions.className = 'actions single'; bankBtn.hidden = true; roll.textContent = label; roll.disabled = true; roll.onclick = null; })(`Hraje ${curP.name} 🤖`);
+    }
     const single = (label, fn, enabled) => {
       actions.className = 'actions single'; bankBtn.hidden = true;
       roll.textContent = label; roll.disabled = !enabled; roll.onclick = fn;
     };
     actions.className = 'actions'; bankBtn.hidden = false;
     if (S.phase === 'over') {
-      if (mode === 'guest') return single('Čeká se na odvetu', null, false);
+      if (mode === 'guest' && me < 0) return single('Sleduješ hru, do další se zapojíš', null, false);
+      if (mode === 'guest') return single('Odveta', () => act({ t: 'rematch' }), true);
+      if (mode === 'host' && liveWatchers().length) {
+        bankBtn.textContent = 'Do čekárny'; bankBtn.disabled = false; bankBtn.onclick = backToLobby;
+        roll.textContent = `Nová hra (+${liveWatchers().length} ${liveWatchers().length === 1 ? 'divák' : 'diváci'})`; roll.disabled = false;
+        roll.onclick = () => { backToLobby(); startOnline(); };
+        return;
+      }
       bankBtn.textContent = mode === 'host' ? 'Do čekárny' : 'Změnit hráče'; bankBtn.disabled = false;
       bankBtn.onclick = mode === 'host' ? backToLobby : () => { store.del('kostky-hra'); S = null; openSetup(); };
       roll.textContent = 'Odveta'; roll.disabled = false; roll.onclick = () => act({ t: 'rematch' });
       return;
     }
-    if (!mine && mode === 'host' && (curP.away || curP.off)) return single(`Přeskočit tah: ${curP.name}`, () => act({ t: 'skip' }), true);
-    if (!mine) return single(curP.away ? `Čeká se na ${curP.name}` : `Hraje ${curP.name}`, null, false);
+    if (mode === 'guest' && me < 0) return single('Sleduješ hru jako divák', null, false);
+    if (!mine && mode !== 'local' && awayOf(S.cur)) return single(`Přeskočit tah: ${curP.name} (není v aplikaci)`, () => act({ t: 'skip' }), true);
+    if (!mine) return single(`Hraje ${curP.name}`, null, false);
     if (S.farkle && !busy) return single('Předat tah', () => act({ t: 'pass' }), true);
     roll.onclick = () => act({ t: 'roll' }); bankBtn.onclick = () => act({ t: 'bank' });
     if (!thrown) {
@@ -3221,6 +3398,58 @@ var qrcode = function() {
       tbl.appendChild(w);
     }
     wrap.appendChild(tbl); box.appendChild(wrap);
+    const sh = el('button', 'btn alt stshare', '📤 Sdílet výsledky');
+    sh.onclick = shareResults;
+    box.appendChild(sh);
+  }
+  // obrázek s výsledky (kreslený do canvasu) pro WhatsApp apod.
+  async function shareResults() {
+    const n = S.players.length, sr = S.series || {}, res = Array.isArray(sr.results) ? sr.results : [];
+    const sum = i => res.reduce((a, r) => a + (r.s[i] || 0), 0);
+    const order = S.players.map((_, i) => i).sort((a, b) => ((sr.wins || [])[b] || 0) - ((sr.wins || [])[a] || 0) || sum(b) - sum(a));
+    const rows = res.slice(-12), colW = 150, lblW = 110, rowH = 46, W = Math.max(520, lblW + colW * (n === 1 ? 2 : n) + 40);
+    const H = 150 + rowH * (rows.length + 2) + 60, cv = document.createElement('canvas');
+    const k = 2; cv.width = W * k; cv.height = H * k;
+    const c = cv.getContext('2d'); c.scale(k, k);
+    const font = (w, sz) => `${w} ${sz}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+    c.fillStyle = '#164535'; c.fillRect(0, 0, W, H);
+    c.fillStyle = '#7A4826'; c.fillRect(0, 0, W, 10); c.fillRect(0, H - 10, W, 10);
+    c.fillStyle = '#FFFFFF'; c.font = font(800, 30); c.fillText('🎲 Kostky – výsledky', 24, 54);
+    c.font = font(400, 16); c.fillStyle = '#B9D2C6';
+    c.fillText(new Date().toLocaleDateString('cs-CZ') + (n > 1 ? ` · ${sr.games || res.length}. hra` : ''), 24, 82);
+    let y = 130;
+    c.font = font(700, 18); c.fillStyle = '#B9D2C6'; c.fillText('Hra', 24, y);
+    const cols = n === 1 ? [0] : order;
+    cols.forEach((i, ci) => { c.fillStyle = '#FFFFFF'; c.textAlign = 'right'; c.fillText((n > 1 ? `${ci + 1}. ` : '') + S.players[i].name, lblW + colW * (ci + 1), y); });
+    if (n === 1) { c.fillStyle = '#B9D2C6'; c.fillText('Tahů', lblW + colW * 2, y); }
+    c.textAlign = 'left';
+    const first = (sr.games || res.length) - rows.length;
+    rows.forEach((r, ri) => {
+      y += rowH; const best = Math.max(...r.s);
+      c.strokeStyle = 'rgba(255,255,255,.12)'; c.beginPath(); c.moveTo(20, y - rowH + 14); c.lineTo(W - 20, y - rowH + 14); c.stroke();
+      c.font = font(400, 18); c.fillStyle = '#B9D2C6'; c.fillText(`${first + ri + 1}.`, 24, y);
+      c.textAlign = 'right';
+      cols.forEach((i, ci) => { const v = r.s[i]; c.font = font(n > 1 && v === best ? 800 : 400, 20); c.fillStyle = n > 1 && v === best ? '#FFD45C' : '#FFFFFF'; c.fillText(String(v), lblW + colW * (ci + 1), y); });
+      if (n === 1) { c.font = font(400, 20); c.fillStyle = '#FFFFFF'; c.fillText(String(r.t), lblW + colW * 2, y); }
+      c.textAlign = 'left';
+    });
+    if (n > 1) {
+      y += rowH;
+      c.strokeStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.moveTo(20, y - rowH + 14); c.lineTo(W - 20, y - rowH + 14); c.stroke();
+      c.font = font(800, 20); c.fillStyle = '#FFFFFF'; c.fillText('Výhry', 24, y);
+      c.textAlign = 'right';
+      cols.forEach((i, ci) => { c.fillStyle = ci === 0 ? '#FFD45C' : '#FFFFFF'; c.fillText(String((sr.wins || [])[i] || 0), lblW + colW * (ci + 1), y); });
+      c.textAlign = 'left';
+    }
+    c.font = font(400, 14); c.fillStyle = '#B9D2C6'; c.fillText(location.host + location.pathname, 24, H - 26);
+    const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+    if (!blob) return;
+    const file = new File([blob], 'kostky-vysledky.png', { type: 'image/png' });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Kostky – výsledky' }); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kostky-vysledky.png';
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
   const bestScore = () => Math.max(...S.players.map(p => p.score));
   // online slaví jen vítěz na svém zařízení, na jednom zařízení se slaví vždy
@@ -3372,32 +3601,43 @@ var qrcode = function() {
   }
 
   // ================= hra na jednom zařízení =================
-  function readNames() { return [...$('names').querySelectorAll('input.nm')].map((el, i) => clean(el.value, 20) || `Hráč ${i + 1}`); }
-  function readAdvs() { return [...$('names').querySelectorAll('input.adv')].map(el => el.checked); }
-  function renderNames(list, advs) {
-    advs = advs || [];
+  const nameRows = () => [...$('names').querySelectorAll('.row')];
+  function readNames() { return nameRows().map((r, i) => clean(r.querySelector('input.nm').value, 20) || (r.dataset.bot ? 'Počítač' : `Hráč ${i + 1}`)); }
+  function readAdvs() { return nameRows().map(r => { const c = r.querySelector('input.adv'); return !!(c && c.checked); }); }
+  function readBots() { return nameRows().map(r => { const sel = r.querySelector('select.botlvl'); return sel ? (+sel.value === 2 ? 2 : 1) : 0; }); }
+  const readRaw = () => nameRows().map(r => r.querySelector('input.nm').value);
+  function renderNames(list, advs, bots) {
+    advs = advs || []; bots = bots || [];
     const box = $('names');
     box.textContent = '';
     list.forEach((nm, i) => {
+      const isBot = bots[i] === 1 || bots[i] === 2;
       const row = document.createElement('div'); row.className = 'row';
+      if (isBot) row.dataset.bot = '1';
       const num = document.createElement('span'); num.className = 'num'; num.textContent = (i + 1) + '.';
       const inp = document.createElement('input'); inp.className = 'nm'; inp.maxLength = 20; inp.autocomplete = 'off'; inp.value = nm;
-      const lab = document.createElement('label'); lab.className = 'advl';
-      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'adv'; cb.checked = !!advs[i];
-      lab.append(cb, document.createTextNode('pokročilý'));
-      inp.setAttribute('aria-label', `Jméno hráče ${i + 1}`);
+      inp.setAttribute('aria-label', isBot ? `Jméno počítače ${i + 1}` : `Jméno hráče ${i + 1}`);
+      let extra;
+      if (isBot) {
+        extra = document.createElement('select'); extra.className = 'botlvl'; extra.setAttribute('aria-label', 'Povaha počítače');
+        [['1', '🤖 opatrný'], ['2', '🤖 odvážný']].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; extra.appendChild(o); });
+        extra.value = String(bots[i]);
+      } else {
+        extra = document.createElement('label'); extra.className = 'advl';
+        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'adv'; cb.checked = !!advs[i];
+        extra.append(cb, document.createTextNode('pokročilý'));
+      }
       const del = document.createElement('button'); del.className = 'del'; del.textContent = '×';
       del.setAttribute('aria-label', 'Odebrat hráče'); del.disabled = list.length <= 1;
-      del.onclick = () => { const cur = readRaw(), a = readAdvs(); cur.splice(i, 1); a.splice(i, 1); renderNames(cur, a); };
-      row.append(num, inp, lab, del); box.appendChild(row);
+      del.onclick = () => { const cur = readRaw(), a = readAdvs(), b = readBots(); cur.splice(i, 1); a.splice(i, 1); b.splice(i, 1); renderNames(cur, a, b); };
+      row.append(num, inp, extra, del); box.appendChild(row);
     });
-    $('addP').hidden = list.length >= MAX_PLAYERS;
+    $('addP').hidden = $('addBot').hidden = list.length >= MAX_PLAYERS;
   }
-  const readRaw = () => [...$('names').querySelectorAll('input.nm')].map(e => e.value);
   function openSetup() {
     mode = 'local';
     renderNames(Array.isArray(prefs.names) && prefs.names.length >= 1 ? prefs.names.slice(0, MAX_PLAYERS).map(n => clean(n, 20)) : [cleanName(prefs.myName) || 'Hráč 1', 'Hráč 2'],
-      Array.isArray(prefs.advs) ? prefs.advs.map(Boolean) : []);
+      Array.isArray(prefs.advs) ? prefs.advs.map(Boolean) : [], Array.isArray(prefs.bots) ? prefs.bots.map(b => (b === 1 || b === 2) ? b : 0) : []);
     $('target').value = isInt(prefs.target, MIN_BANK, 1e6) ? prefs.target : 1000;
     $('setupMsg').textContent = '';
     screen('setup');
@@ -3405,9 +3645,10 @@ var qrcode = function() {
   function startLocal() {
     const names = readNames(), t = parseInt($('target').value, 10);
     if (!isInt(t, MIN_BANK, 1e6)) { $('setupMsg').textContent = `Cíl musí být aspoň ${MIN_BANK} b.`; return; }
-    const advs = readAdvs();
-    prefs.names = names; prefs.advs = advs; prefs.target = t; savePrefs();
-    mode = 'local'; S = newGame(names, t, advs); saveLocal(); enterGame();
+    const advs = readAdvs(), bots = readBots();
+    if (bots.every(b => b > 0)) { $('setupMsg').textContent = 'Aspoň jeden hráč musí být člověk.'; return; }
+    prefs.names = names; prefs.advs = advs; prefs.bots = bots; prefs.target = t; savePrefs();
+    mode = 'local'; S = newGame(names, t, advs, bots); saveLocal(); enterGame();
   }
 
   // ================= online: Firebase =================
@@ -3633,13 +3874,19 @@ var qrcode = function() {
       try {
         const h = await roomRef.child('host').once('value');
         if (!h.exists() && roomRef) await roomRef.set(fullRoom());
-        else if (roomRef) { await roomRef.child('created').set(firebase.database.ServerValue.TIMESTAMP); if (S) broadcast(); }
+        else if (roomRef) await roomRef.child('created').set(firebase.database.ServerValue.TIMESTAMP);
       } catch (e) {}
     });
     listen(players, 'child_added', s => onPlayerJoin(s.key, s.val()));
     listen(players, 'child_changed', s => onPlayerJoin(s.key, s.val()));
     listen(players, 'child_removed', s => onPlayerLeave(s.key));
-    listen(roomRef.child('actions'), 'child_added', s => { const a = s.val(); s.ref.remove().catch(() => {}); onAction(a); });
+    // zakladatel je také hráč s přítomností a čte sdílený stav jako ostatní
+    const meRef = roomRef.child('players/' + myUid);
+    const present = () => meRef.onDisconnect().remove().then(() => meRef.set(myName || 'Hráč')).catch(() => {});
+    present();
+    listen(db().ref('.info/connected'), 'value', s => { if (s.val() === true && roomRef) present(); });
+    listen(players, 'value', s => { presence = s.val() || {}; if (S) renderGame(); });
+    listen(roomRef.child('state'), 'value', s => onState(s.val()));
     // značka „zakladatel žije“ pro ostatní
     heartbeat = setInterval(() => { if (roomRef) roomRef.child('created').set(firebase.database.ServerValue.TIMESTAMP).catch(() => {}); }, 20000);
     }
@@ -3668,7 +3915,7 @@ var qrcode = function() {
       attachHost();
       await roomRef.child('created').set(firebase.database.ServerValue.TIMESTAMP);
       guardBack();
-      if (S) { enterGame(); broadcast(); }
+      if (S) enterGame();
       else { $('hostRoom').hidden = false; renderLobby(); $('hostStatus').textContent = 'Čekám na hráče.'; }
     } catch (e) {
       prefs.hostRoom = null; savePrefs(); renderHome();
@@ -3707,13 +3954,9 @@ var qrcode = function() {
       lobby.push({ uid, name: uniqueName(name, uid) }); writeLobby();
     } else {
       const idx = uids.indexOf(uid);
-      if (idx < 0) { roomRef.child('players/' + uid).set('#started').catch(() => {}); return; }
-      const q = S.players[idx];
-      if (q.off || q.away) {
-        const wasOff = q.off;
-        q.off = false; q.away = false;
-        setMsg(S, wasOff ? `${q.name} se znovu připojil.` : `${q.name} je zpět.`, 'good'); commit();
-      }
+      if (idx < 0) { watchers[uid] = name; return; }   // pozdě příchozí = divák (označí se sám)
+      // hráč, který dřív odešel, se vrátil
+      if (S.players[idx].off) txState(s => { if (!s.players[idx] || !s.players[idx].off) return false; s.players[idx].off = false; setMsg(s, `${s.players[idx].name} se znovu připojil.`, 'good'); return true; });
     }
   }
   // spojení zmizelo (minimalizovaná aplikace, zhasnutý displej): hráč zůstává ve hře, jen „mimo aplikaci“
@@ -3725,33 +3968,16 @@ var qrcode = function() {
       if (lobby.length !== before) writeLobby();
       return;
     }
-    const idx = uids.indexOf(uid), q = S.players[idx];
-    if (!q || q.off || q.away) return;
-    q.away = true;
-    if (S.phase === 'play' && S.cur === idx) setMsg(S, `${q.name} není v aplikaci, hra na něj počká.`, 'bad');
-    commit();
+    // ve hře se nic nemění: hráč je jen „mimo aplikaci“ (počítá se z přítomnosti)
   }
   // hráč ze hry opravdu odešel (tlačítko Odejít)
+  let watchers = {};   // diváci: pozdě příchozí, zapojí se do další hry
+  // diváci, kteří jsou pořád připojení
+  const liveWatchers = () => Object.keys(watchers).filter(u => presence[u] === '#watch');
   function onPlayerLeft(uid) {
-    if (!S) { const b = lobby.length; lobby = lobby.filter(p => p.uid !== uid); if (lobby.length !== b) writeLobby(); return; }
-    const idx = uids.indexOf(uid), q = S.players[idx];
-    if (!q || q.off) return;
-    q.off = true; q.away = false;
-    if (S.phase === 'play' && S.cur === idx) endTurn(S, `${q.name} odešel ze hry.`, 'bad', -1);
-    else setMsg(S, `${q.name} odešel ze hry.`, 'bad');
-    commit();
-  }
-  function onAction(a) {
-    if (!S || S.phase !== 'play' || !a || typeof a !== 'object' || typeof a.from !== 'string') return;
-    const now = Date.now(), r = actRate[a.from] || (actRate[a.from] = { t: 0, n: 0 });
-    if (now - r.t > 1000) { r.t = now; r.n = 0; }
-    if (++r.n > 10) return;
-    const idx = uids.indexOf(a.from);
-    if (idx < 0 || S.cur !== idx || busyNow()) return;
-    let x = null;
-    if (a.t === 'roll' || a.t === 'bank' || a.t === 'pass') x = { t: a.t };
-    else if (a.t === 'toggle' && isInt(a.i, 0, 5)) x = { t: 'toggle', i: a.i };
-    if (x && apply(S, x)) commit();
+    delete watchers[uid];
+    if (!S) { const b = lobby.length; lobby = lobby.filter(p => p.uid !== uid); if (lobby.length !== b) writeLobby(); }
+    // ve hře si odchod zapíše odcházející hráč sám (markLeft)
   }
   function kick(i) {
     const p = lobby[i]; if (!p || p.uid === myUid) return;
@@ -3770,6 +3996,15 @@ var qrcode = function() {
   function backToLobby() {
     if (S && S.phase === 'play' && !confirm('Ukončit rozehranou hru a vrátit všechny do čekárny?')) return;
     lobby = S.players.map((p, i) => ({ uid: uids[i], name: p.name })).filter((p, i) => i === 0 || !S.players[i].off);
+    // diváci se přidají do čekárny (a dostanou zpět své jméno)
+    liveWatchers().forEach(u => {
+      if (lobby.length < MAX_PLAYERS && !lobby.some(p => p.uid === u)) {
+        const nm = uniqueName(watchers[u], u);
+        lobby.push({ uid: u, name: nm });
+        if (roomRef) roomRef.child('players/' + u).set(nm).catch(() => {});
+      }
+    });
+    watchers = {};
     S = null; uids = [];
     if (roomRef) roomRef.child('state').remove().catch(() => {});
     writeLobby();
@@ -3804,7 +4039,7 @@ var qrcode = function() {
   }
 
   // ================= online: hráč, který se připojuje =================
-  let hostSeen = 0, hostWatch = null, graceTimer = null, hostPresent = false, hostSeenOnce = false;
+  let hostSeen = 0, hostWatch = null, graceTimer = null, hostPresent = false, hostSeenOnce = false, spectator = false;
   function openJoin() {
     mode = 'guest';
     // jedno zařízení může používat víc lidí: jméno se zadává vždy, nabídnou se nedávná jména
@@ -3907,12 +4142,12 @@ var qrcode = function() {
       const meRef = roomRef.child('players/' + myUid);
       await withTimeout(meRef.onDisconnect().remove(), 12000);
       await withTimeout(meRef.set(name), 12000);
-      roomCode = code; hostPresent = true; hostSeenOnce = false;
+      roomCode = code; hostPresent = true; hostSeenOnce = false; spectator = false;
       prefs.guestRoom = { code, name }; savePrefs();
       guardBack();
       // po výpadku signálu se znovu přihlásí do hry
       listen(db().ref('.info/connected'), 'value', s => {
-        if (s.val() === true && roomRef) { meRef.onDisconnect().remove().then(() => meRef.set(myName)).catch(() => {}); }
+        if (s.val() === true && roomRef) { meRef.onDisconnect().remove().then(() => meRef.set(spectator ? '#watch' : myName)).catch(() => {}); }
       });
       listen(meRef, 'value', s => {
         const v = s.val();
@@ -3920,6 +4155,7 @@ var qrcode = function() {
         else if (v === '#full') leaveOnline('Hra je plná (nejvýš 6 hráčů).', 'me');
         else if (v === '#started') leaveOnline('Hra už běží, nově se do ní připojit nejde.', 'me');
       });
+      listen(roomRef.child('players'), 'value', s => { presence = s.val() || {}; if (S) renderGame(); });
       listen(roomRef.child('lobby'), 'value', s => onLobby(s.val()));
       listen(roomRef.child('state'), 'value', s => onState(s.val()));
       listen(roomRef.child('host'), 'value', s => {
@@ -3933,7 +4169,7 @@ var qrcode = function() {
           const back = !hostPresent;
           hostPresent = true; clearTimeout(graceTimer);
           // místnost byla obnovena: znovu se přihlásit
-          if (back && hostSeenOnce) meRef.onDisconnect().remove().then(() => meRef.set(myName)).catch(() => {});
+          if (back && hostSeenOnce) meRef.onDisconnect().remove().then(() => meRef.set(spectator ? '#watch' : myName)).catch(() => {});
           hostSeenOnce = true;
         }
       });
@@ -3941,12 +4177,11 @@ var qrcode = function() {
       listen(roomRef.child('created'), 'value', s => {
         if (s.val() === 0) {
           // zakladatel zhasl displej nebo přepnul aplikaci; hra na něj počká
-          if (S) { setMsg(S, 'Zakladatel hry není v aplikaci. Hra pokračuje, až se vrátí.', 'bad'); renderGame(); }
-          else $('joinStatus').textContent = 'Zakladatel není v aplikaci, čekám na něj…';
+          if (!S) $('joinStatus').textContent = 'Zakladatel není v aplikaci, hru spustí po návratu.';
         } else hostSeen = Date.now();
       });
       hostWatch = setInterval(() => {
-        if (Date.now() - hostSeen > 150000 && S) { setMsg(S, 'Zakladatel hry je nedostupný, čekám na něj…', 'bad'); renderGame(); }
+        // ve hře zakladatele nepotřebujeme, hlídá se jen v čekárně
       }, 15000);
     } catch (e) {
       detachAll(); roomRef = null;
@@ -3967,13 +4202,14 @@ var qrcode = function() {
     screen('join');
   }
   function onState(str) {
-    if (!roomRef || mode !== 'guest') return;
+    if (!roomRef || mode === 'local') return;
     if (str == null) {
+      if (mode === 'host') return;   // zakladatel řídí návrat do čekárny sám
       // stav zmizí i při výpadku zakladatele; do čekárny jen když zakladatel hru opravdu ukončil
       setTimeout(() => {
         if (S && hostPresent && roomRef) {
           roomRef.child('state').once('value').then(v => {
-            if (!v.exists() && S && hostPresent) { S = null; releaseWake(); screen('join'); $('joinStatus').textContent = 'Čekám, až zakladatel spustí hru.'; }
+            if (!v.exists() && S && hostPresent) { S = null; spectator = false; releaseWake(); screen('join'); $('joinStatus').textContent = 'Čekám, až zakladatel spustí hru.'; }
           }).catch(() => {});
         }
       }, 1500);
@@ -3984,11 +4220,27 @@ var qrcode = function() {
     const s = validateState(o.s);
     if (!s || !validUids(o.uids, s.players.length)) return;
     const idx = o.uids.indexOf(myUid);
-    if (idx < 0) return;
+    if (mode === 'guest') {
+      // kdo ve hře není, sleduje ji jako divák a do další hry se zapojí
+      const meNode = roomRef.child('players/' + myUid);
+      if (idx < 0 && !spectator) { spectator = true; meNode.set('#watch').catch(() => {}); }
+      else if (idx >= 0 && spectator) { spectator = false; meNode.set(myName).catch(() => {}); }
+    } else if (idx < 0) return;
     const fresh = !S || $('game').hidden;
     S = s; me = idx; uids = o.uids;
     hostSeen = Date.now();
-    if (fresh) enterGame(); else renderGame();
+    if (fresh && (mode === 'guest' || !$('host').hidden || !$('game').hidden)) enterGame(); else renderGame();
+  }
+  // odchod ze hry: hráč se sám označí jako odešlý (a když je na tahu, tah přejde dál)
+  function markLeft() {
+    if (!S || S.phase !== 'play') return Promise.resolve();
+    const i = me;
+    return txState(s => {
+      const q = s.players[i]; if (!q || q.off) return false;
+      q.off = true;
+      if (s.cur === i) endTurn(s, `${q.name} odešel ze hry.`, 'bad', -1); else setMsg(s, `${q.name} odešel ze hry.`, 'bad');
+      return true;
+    });
   }
   function sendAction(a) {
     if (!roomRef || !myUid) return;
@@ -4011,9 +4263,15 @@ var qrcode = function() {
   };
   $('goJoin').onclick = () => { $('homeMsg').textContent = ''; openJoin(); };
   $('setupBack').onclick = () => screen('home');
+  $('addBot').onclick = () => {
+    const cur = readRaw(), a = readAdvs(), b = readBots();
+    if (cur.length >= MAX_PLAYERS) return;
+    const k = b.filter(x => x > 0).length;
+    cur.push(k ? `Počítač ${k + 1}` : 'Počítač'); a.push(false); b.push(1); renderNames(cur, a, b);
+  };
   $('addP').onclick = () => {
-    const cur = readRaw(), a = readAdvs();
-    if (cur.length < MAX_PLAYERS) { cur.push(`Hráč ${cur.length + 1}`); a.push(false); renderNames(cur, a); }
+    const cur = readRaw(), a = readAdvs(), b = readBots();
+    if (cur.length < MAX_PLAYERS) { cur.push(`Hráč ${cur.length + 1}`); a.push(false); b.push(0); renderNames(cur, a, b); }
   };
   $('start').onclick = startLocal;
   $('soundBtn').onclick = () => {
@@ -4037,7 +4295,7 @@ var qrcode = function() {
       if (!confirm('Opravdu ukončit hru a začít znovu?')) return;
       store.del('kostky-hra'); S = null; openSetup();
     } else if (mode === 'host') backToLobby();
-    else if (confirm('Opravdu odejít ze hry?')) leaveOnline('', 'me');
+    else if (confirm('Opravdu odejít ze hry?')) markLeft().then(() => leaveOnline('', 'me'));
   };
   $('felt').addEventListener('click', () => { if (S && S.phase === 'play' && !S.dice.length) act({ t: 'roll' }); });
   let rt;
@@ -4085,6 +4343,34 @@ var qrcode = function() {
     h.hidden = !h.hidden;
   };
   renderInstall();
+
+  // ================= vzhled stolu a kostek =================
+  const FELTS = [['green', 'Zelená', '#27735A'], ['blue', 'Modrá', '#2B5F91'], ['red', 'Vínová', '#8A2E3B'], ['grey', 'Šedá', '#4B545A']];
+  const DICE = [['white', 'Bílé', '#FFFFFF', '#111'], ['ivory', 'Slonová kost', '#F1E6CC', '#2E1C0E'], ['red', 'Červené', '#C92A35', '#FFF'], ['black', 'Černé', '#262626', '#FFF']];
+  function applyTheme() {
+    const r = document.documentElement;
+    const f = FELTS.some(x => x[0] === prefs.felt) ? prefs.felt : 'green', d = DICE.some(x => x[0] === prefs.dice) ? prefs.dice : 'white';
+    if (f === 'green') r.removeAttribute('data-felt'); else r.setAttribute('data-felt', f);
+    if (d === 'white') r.removeAttribute('data-dice'); else r.setAttribute('data-dice', d);
+    renderThemePicker();
+  }
+  function renderThemePicker() {
+    const mk = (box, list, key, cur) => {
+      box.textContent = '';
+      list.forEach(([id, label, bg, fg]) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'sw' + (id === cur ? ' on' : '');
+        b.style.background = bg; if (fg) b.style.color = fg;
+        b.setAttribute('aria-label', label); b.setAttribute('aria-pressed', id === cur); b.title = label;
+        b.textContent = fg ? '⚄' : '';
+        b.onclick = () => { prefs[key] = id; savePrefs(); applyTheme(); };
+        box.appendChild(b);
+      });
+    };
+    mk($('feltPick'), FELTS, 'felt', prefs.felt || 'green');
+    mk($('dicePick'), DICE, 'dice', prefs.dice || 'white');
+  }
+  applyTheme();
 
   // ================= start =================
   let saved = null;
