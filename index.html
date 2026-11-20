@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-1LPr2mw+8L9rG4TGu4l9AV1JaPCE6HvcnPo+1cjuQmc=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-3zZwzBkRxHtS88ojRDC3rQjQLqIk7OE/18QaOvVZpfk=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -264,6 +264,7 @@
     <button class="btn alt" id="goHost">Založit online hru</button>
     <button class="btn alt" id="goJoin">Připojit se k online hře</button>
     <button class="btn alt" id="installBtn" hidden>Instalovat jako aplikaci</button>
+    <p class="sub" id="installHelp" hidden style="background:var(--card);padding:.7rem .8rem;border-radius:.7rem;line-height:1.4"></p>
     <p class="msg bad" id="homeMsg"></p>
     <p class="sub" id="authState" hidden>✓ Toto zařízení smí zakládat hry · <button class="link" id="authRevoke" style="padding:0">zrušit oprávnění</button></p>
     <details>
@@ -3041,15 +3042,22 @@ var qrcode = function() {
     for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 4);
     const src = ctx.createBufferSource(); src.buffer = buf;
     const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800 + Math.random() * 1800; bp.Q.value = 3;
-    const g = ctx.createGain(); g.gain.value = vol;
+    const g = ctx.createGain(); g.gain.value = vol * volume();
     src.connect(bp).connect(g).connect(ctx.destination); src.start(ctx.currentTime + at);
   }
-  const soundOn = () => prefs.sound !== false;
+  // hlasitost přímo v aplikaci: 100 % → 50 % → 20 % → vypnuto (Windows ji neumí nastavit zvlášť pro aplikaci)
+  const VOLS = [1, 0.5, 0.2, 0];
+  const volume = () => (prefs.sound === false ? 0 : (VOLS.includes(prefs.vol) ? prefs.vol : 1));
+  const soundOn = () => volume() > 0;
   const vibeOn = () => prefs.vibe !== false;
   function buzz(pattern) { try { if (vibeOn() && navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
   function renderToggles() {
     const sb = $('soundBtn'), vb = $('vibeBtn');
-    sb.textContent = soundOn() ? '🔊' : '🔇'; sb.setAttribute('aria-pressed', soundOn()); sb.setAttribute('aria-label', soundOn() ? 'Vypnout zvuk' : 'Zapnout zvuk');
+    const v = volume();
+    sb.textContent = v >= 1 ? '🔊' : v > 0.3 ? '🔉' : v > 0 ? '🔈' : '🔇';
+    sb.setAttribute('aria-pressed', soundOn());
+    sb.setAttribute('aria-label', `Hlasitost ${Math.round(v * 100)} %, klepnutím změnit`);
+    sb.title = v > 0 ? `Hlasitost ${Math.round(v * 100)} %` : 'Zvuk vypnutý';
     vb.textContent = vibeOn() ? '📳' : '📴'; vb.setAttribute('aria-pressed', vibeOn()); vb.setAttribute('aria-label', vibeOn() ? 'Vypnout vibrace' : 'Zapnout vibrace');
     vb.hidden = !navigator.vibrate;
   }
@@ -3220,7 +3228,7 @@ var qrcode = function() {
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'triangle'; o.frequency.value = f;
         g.gain.setValueAtTime(0.0001, t0 + at);
-        g.gain.exponentialRampToValueAtTime(0.18, t0 + at + 0.02);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.18 * volume()), t0 + at + 0.02);
         g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + dur);
         o.connect(g).connect(ctx.destination); o.start(t0 + at); o.stop(t0 + at + dur + 0.05);
       }
@@ -3920,7 +3928,12 @@ var qrcode = function() {
     if (cur.length < MAX_PLAYERS) { cur.push(`Hráč ${cur.length + 1}`); a.push(false); renderNames(cur, a); }
   };
   $('start').onclick = startLocal;
-  $('soundBtn').onclick = () => { prefs.sound = !soundOn(); savePrefs(); renderToggles(); };
+  $('soundBtn').onclick = () => {
+    const i = VOLS.indexOf(volume());
+    prefs.vol = VOLS[(i + 1) % VOLS.length]; prefs.sound = prefs.vol > 0;
+    savePrefs(); renderToggles();
+    if (soundOn()) { unlockAudio(); try { clack(0, 0.9); } catch (e) {} } // ukázka hlasitosti
+  };
   $('vibeBtn').onclick = () => { prefs.vibe = !vibeOn(); savePrefs(); renderToggles(); if (vibeOn()) buzz(30); };
   $('makeRoom').onclick = makeRoom;
   $('share').onclick = shareCode;
@@ -3950,14 +3963,40 @@ var qrcode = function() {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
   let installEvt = null;
-  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('installBtn').hidden = false; });
-  window.addEventListener('appinstalled', () => { installEvt = null; $('installBtn').hidden = true; });
+  const ua = navigator.userAgent;
+  const standalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  const isAndroid = /Android/i.test(ua), isIOS = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  // návod podle prohlížeče, když automatická instalace není k dispozici
+  function installHelpText() {
+    if (/FBAN|FBAV|FB_IAB|Instagram|Messenger|Line\/|; wv\)|WhatsApp/i.test(ua))
+      return 'Hra je otevřená uvnitř jiné aplikace (Messenger, WhatsApp, Facebook…), odtud instalovat nejde. Klepni na ⋮ nebo ⋯ a zvol „Otevřít v prohlížeči“ (Chrome), pak to zkus znovu.';
+    if (isIOS) return 'V Safari klepni na Sdílet (čtverec se šipkou) a zvol „Přidat na plochu“.';
+    if (/SamsungBrowser/i.test(ua)) return 'V Samsung Internetu klepni na ≡ vpravo dole a zvol „Přidat stránku do“ → „Domovská obrazovka“.';
+    if (/Firefox/i.test(ua)) return 'Ve Firefoxu klepni na ⋮ a zvol „Instalovat“ nebo „Přidat na domovskou obrazovku“.';
+    if (/EdgA|Edg\//i.test(ua)) return 'V Edgi otevři nabídku ⋯ a zvol „Přidat na telefon“ nebo „Aplikace“ → „Instalovat tento web jako aplikaci“.';
+    if (/OPR|Opera/i.test(ua)) return 'V Opeře klepni na ⋮ a zvol „Přidat na domovskou obrazovku“.';
+    if (isAndroid) return 'V Chromu klepni na ⋮ vpravo nahoře a zvol „Instalovat aplikaci“ nebo „Přidat na plochu“ → „Instalovat“. Pokud tam volba není, aktualizuj Chrome v Obchodě Play.';
+    return 'V Chromu nebo Edgi klikni na ikonu instalace vpravo v adresním řádku, případně v nabídce ⋮ zvol „Instalovat Kostky“.';
+  }
+  function renderInstall() {
+    const show = !standalone() && (!!installEvt || isAndroid || isIOS);
+    $('installBtn').hidden = !show;
+    if (!show) $('installHelp').hidden = true;
+  }
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; renderInstall(); });
+  window.addEventListener('appinstalled', () => { installEvt = null; $('installHelp').hidden = true; renderInstall(); });
   $('installBtn').onclick = async () => {
-    if (!installEvt) return;
-    installEvt.prompt();
-    try { await installEvt.userChoice; } catch (e) {}
-    installEvt = null; $('installBtn').hidden = true;
+    if (installEvt) {
+      installEvt.prompt();
+      try { await installEvt.userChoice; } catch (e) {}
+      installEvt = null; renderInstall();
+      return;
+    }
+    const h = $('installHelp');
+    h.textContent = installHelpText();
+    h.hidden = !h.hidden;
   };
+  renderInstall();
 
   // ================= start =================
   let saved = null;
