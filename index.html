@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-/lxcRRfd9D7eD7fz/RoO6xxG0CXYMpRpqxwV28/EFA8=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-21QgLXGXwMt2LuUZfjxmoleeQMRi905TJ+4hxC57kE8=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -258,6 +258,7 @@
         <li>Pak buď hodíš zbylými kostkami, nebo body zapíšeš. Zapsat jde až od 350 b. v tahu.</li>
         <li>Když hod nepřinese nic, přicházíš o body z celého tahu a hraje další hráč.</li>
         <li>Když dáš stranou všech 6 kostek, házíš znovu všemi šesti a body z tahu se dál sčítají.</li>
+        <li>Postupka bez jedné: když v hodu šesti kostkami padne pět různých čísel postupky, můžeš je dát stranou a dohodit chybějící číslo jednou kostkou. Padne → 1200 b. a můžeš házet znovu všemi šesti. Nepadne → přicházíš o body z celého tahu.</li>
         <li>Když někdo dosáhne cíle, každý další hráč v pořadí má ještě jeden poslední tah. Vyhrává nejvyšší skóre.</li>
         <li>Hrát jde i v jednom hráči: cílem je dosáhnout zadaného počtu bodů na co nejméně tahů.</li>
         <li>Začátečníkům hra ztlumí kostky, které v hodu nebodují. Pokročilý hráč tuhle nápovědu nemá.</li>
@@ -269,6 +270,7 @@
         <tr><td>5 5 5 / 6 6 6</td><td>500 / 600 b.</td></tr>
         <tr><td>1 1 1</td><td>1000 b.</td></tr>
         <tr><td>1 2 3 4 5 6</td><td>1200 b.</td></tr>
+        <tr><td>postupka bez jedné + dohození</td><td>1200 b.</td></tr>
         <tr><td>4× stejné číslo</td><td>trojice × 2</td></tr>
         <tr><td>5× / 6× stejné číslo</td><td>trojice × 4 / × 8</td></tr>
       </table>
@@ -2716,7 +2718,19 @@ var qrcode = function() {
     const c = counts(vals);
     return c[1] > 0 || c[5] > 0 || c.some((n, f) => f > 0 && n >= 3);
   }
-  function deadDie(vals, v) { return !isStraight(vals) && v !== 1 && v !== 5 && counts(vals)[v] < 3; }
+  function deadDie(vals, v) {
+    if (isStraight(vals)) return false;
+    if (vals.length === 6 && new Set(vals).size === 5) return false; // jde odložit postupku bez jedné
+    return v !== 1 && v !== 5 && counts(vals)[v] < 3;
+  }
+  // postupka bez jedné: 5 různých čísel z hodu šesti kostkami; vrátí chybějící číslo, jinak 0
+  function partialMissing(g, sel) {
+    if (g.remaining !== 6 || g.dice.length !== 6 || sel.length !== 5 || g.bonusReady) return 0;
+    const set = new Set(sel);
+    if (set.size !== 5) return 0;
+    for (let f = 1; f <= 6; f++) if (!set.has(f)) return f;
+    return 0;
+  }
 
   // ================= pravidla hry (běží u zakladatele / lokálně) =================
   function newGame(names, target, advs) {
@@ -2724,7 +2738,7 @@ var qrcode = function() {
       finalRound: false, finalBy: null, throwId: 0, turns: 0, msg: '', msgType: '' };
     resetTurn(g); return g;
   }
-  function resetTurn(g) { g.turnPts = 0; g.remaining = 6; g.dice = []; g.aside = []; g.farkle = false; g.lost = 0; }
+  function resetTurn(g) { g.turnPts = 0; g.remaining = 6; g.dice = []; g.aside = []; g.farkle = false; g.lost = 0; g.pending = 0; g.bonusReady = false; }
   const selVals = g => g.dice.filter(d => d.sel).map(d => d.v);
   function setMsg(g, t, type) { g.msg = t; g.msgType = type || ''; }
 
@@ -2739,7 +2753,7 @@ var qrcode = function() {
     if (g.phase !== 'play') return false;
     if (a.t === 'roll') return doRoll(g);
     if (a.t === 'toggle') {
-      if (!g.dice.length || g.farkle) return false;
+      if (!g.dice.length || g.farkle || g.bonusReady) return false;
       const d = g.dice[a.i]; if (!d) return false;
       d.sel = !d.sel; return true;
     }
@@ -2750,14 +2764,24 @@ var qrcode = function() {
 
   function doRoll(g) {
     if (g.farkle) return false;
-    if (g.dice.length) {
-      const sel = selVals(g), pts = scoreDice(sel);
-      if (!pts) return false;
+    if (g.bonusReady) {
+      // postupka doplněna, hází se znovu všemi šesti
+      g.bonusReady = false; g.remaining = 6; setMsg(g, '');
+    } else if (g.dice.length) {
+      const sel = selVals(g), pts = scoreDice(sel), miss = partialMissing(g, sel);
+      if (!pts && miss) {
+        g.aside.push({ vals: sel.slice().sort(), pts: 0 });
+        g.remaining = 1; g.pending = miss;
+        setMsg(g, `Dohazuješ postupku, potřebuješ ${miss}.`, '');
+      }
+      else if (!pts) return false;
+      else {
       g.turnPts += pts;
       g.aside.push({ vals: sel.slice().sort(), pts });
       g.remaining -= sel.length;
       if (g.remaining === 0) { g.remaining = 6; setMsg(g, 'Všech 6 kostek boduje, házíš znovu všemi!', 'good'); }
       else setMsg(g, '');
+      }
     } else setMsg(g, '');
     const slots = [0, 1, 2, 3, 4, 5]; for (let i = 5; i > 0; i--) { const j = rand(i + 1); [slots[i], slots[j]] = [slots[j], slots[i]]; }
     const dir = rand(2) ? 1 : -1;
@@ -2765,6 +2789,20 @@ var qrcode = function() {
       v: rand(6) + 1, sel: false, slot: slots[i], jx: rand(9) - 4, jy: rand(9) - 4, rz: rand(61) - 30, dir
     }));
     g.throwId++;
+    if (g.pending) {
+      const miss = g.pending, v = g.dice[0].v, who = g.players[g.cur].name;
+      g.pending = 0;
+      if (v === miss) {
+        const grp = g.aside[g.aside.length - 1];
+        grp.vals = grp.vals.concat(v).sort(); grp.pts = 1200;
+        g.turnPts += 1200; g.remaining = 6; g.bonusReady = true;
+        setMsg(g, 'Postupka doplněna! +1200 b. Můžeš házet znovu všemi šesti, nebo zapsat.', 'good');
+      } else {
+        g.farkle = true; g.lost = g.turnPts;
+        setMsg(g, `Postupka se nedoplnila (padla ${v}, chyběla ${miss}). ${who} ${g.lost ? `přichází o ${g.lost} b. z tahu` : 'nezískává nic'}.`, 'bad');
+      }
+      return true;
+    }
     if (!canScore(g.dice.map(d => d.v))) {
       g.farkle = true; g.lost = g.turnPts;
       const who = g.players[g.cur].name;
@@ -2774,8 +2812,8 @@ var qrcode = function() {
   }
 
   function doBank(g) {
-    const pts = scoreDice(selVals(g));
-    if (!pts) return false;
+    const pts = g.bonusReady ? 0 : scoreDice(selVals(g));
+    if (!pts && !g.bonusReady) return false;
     const total = g.turnPts + pts;
     if (total < MIN_BANK) return false;
     g.players[g.cur].score += total;
@@ -2840,6 +2878,7 @@ var qrcode = function() {
       phase: s.phase, target: s.target, players, cur: s.cur, finalRound: s.finalRound === true,
       finalBy: isInt(s.finalBy, 0, MAX_PLAYERS - 1) ? s.finalBy : null, turnPts: s.turnPts, remaining: s.remaining,
       dice, aside, farkle: s.farkle === true, lost: isInt(s.lost, 0, 1e7) ? s.lost : 0, throwId: s.throwId, turns: isInt(s.turns, 0, 1e6) ? s.turns : 0,
+      pending: isInt(s.pending, 1, 6) ? s.pending : 0, bonusReady: s.bonusReady === true,
       msg: clean(s.msg, 200), msgType: (s.msgType === 'good' || s.msgType === 'bad') ? s.msgType : ''
     };
   }
@@ -3023,11 +3062,14 @@ var qrcode = function() {
       ? S.aside.map(g => `<div class="group">${g.vals.map(v => `<div class="mini${v === 1 ? ' one' : ''}">${faceHTML(v)}</div>`).join('')}<b>+${g.pts}</b></div>`).join('')
       : `<span class="empty">${S.phase === 'play' ? 'Odložené kostky se ukážou tady' : ''}</span>`;
 
-    const sel = selVals(S), selPts = scoreDice(sel), thrown = S.dice.length > 0;
+    const sel = selVals(S), selPts = S.bonusReady ? null : scoreDice(sel), thrown = S.dice.length > 0;
+    const miss = selPts ? 0 : partialMissing(S, sel);
     $('turnPts').textContent = S.phase === 'play' ? `Tah: ${S.turnPts + (selPts || 0)} b.` : '';
     let info = '';
     if (S.phase === 'play' && thrown && !S.farkle && !busy) {
-      if (!mine) info = `vybírá ${curP.name}`;
+      if (S.bonusReady) info = 'postupka 1200 b.';
+      else if (!mine) info = `vybírá ${curP.name}`;
+      else if (miss) info = `postupka bez ${miss}: dohoď 1 kostkou`;
       else if (!sel.length) info = 'Klepnutím vyber kostky';
       else if (selPts == null) info = 'Stranou jen 1, 5 nebo trojice';
       else info = `výběr +${selPts} b.`;
@@ -3061,6 +3103,13 @@ var qrcode = function() {
     roll.onclick = () => act({ t: 'roll' }); bankBtn.onclick = () => act({ t: 'bank' });
     if (!thrown) {
       roll.textContent = 'Hodit 6 kostkami'; roll.disabled = busy;
+      bankBtn.textContent = 'Zapsat'; bankBtn.disabled = true;
+    } else if (S.bonusReady) {
+      roll.textContent = 'Házet dál (6)'; roll.disabled = busy;
+      if (S.turnPts < MIN_BANK) { bankBtn.textContent = `Zapsat (min. ${MIN_BANK})`; bankBtn.disabled = true; }
+      else { bankBtn.textContent = `Zapsat ${S.turnPts} b.`; bankBtn.disabled = busy; }
+    } else if (miss) {
+      roll.textContent = `Dohodit ${miss} (1 kostka)`; roll.disabled = busy;
       bankBtn.textContent = 'Zapsat'; bankBtn.disabled = true;
     } else {
       let rest = S.remaining - sel.length; if (rest === 0) rest = 6;
@@ -3339,6 +3388,7 @@ var qrcode = function() {
     clearTimeout(graceTimer);
     if (ref && removeWhat === 'room') {
       ref.onDisconnect().cancel().catch(() => {});
+      ref.child('created').onDisconnect().cancel().catch(() => {});
       // nejdřív dát ostatním vědět, pak místnost smazat
       ref.child('lobby').set('#closed').catch(() => {}).then(() => ref.remove()).catch(() => {});
     }
@@ -3400,6 +3450,12 @@ var qrcode = function() {
     try {
       myUid = await ensureOnline($('hostStatus'));
       $('hostStatus').textContent = 'Zakládám hru…';
+      // staré místnosti tohoto zařízení (opuštěné bez ukončení) smazat
+      (Array.isArray(prefs.myRooms) ? prefs.myRooms : []).forEach(c => {
+        if (CODE_RE.test(c)) db().ref('rooms/' + c).once('value').then(v => {
+          if (v.exists() && v.child('host').val() === myUid) v.ref.remove().catch(() => {});
+        }).catch(() => {});
+      });
       let ok = false;
       for (let k = 0; k < 5 && !ok; k++) {
         roomCode = makeCode();
@@ -3420,23 +3476,28 @@ var qrcode = function() {
       } else $('hostStatus').textContent = fbErr(e);
       return;
     }
+    prefs.myRooms = [roomCode]; savePrefs();
     $('code').textContent = roomCode;
     drawQR(joinLink(roomCode));
     $('hostForm').hidden = true; $('hostRoom').hidden = false;
     $('hostStatus').textContent = 'Čekám na hráče.';
     renderLobby();
     const players = roomRef.child('players');
-    roomRef.onDisconnect().remove().catch(() => {});
+    // při výpadku zakladatele se místnost nemaže, jen se označí (created = 0) a hra počká
+    const markAway = () => roomRef && roomRef.child('created').onDisconnect().set(0).catch(() => {});
+    markAway();
     let wasDown = false;
     listen(db().ref('.info/connected'), 'value', async s => {
       if (s.val() !== true) { wasDown = true; return; }
       if (!roomRef) return;
-      roomRef.onDisconnect().remove().catch(() => {});
+      markAway();
       if (!wasDown) return;
       wasDown = false;
+      suppressLeaveUntil = Date.now() + 15000;
       try {
         const h = await roomRef.child('host').once('value');
-        if (!h.exists() && roomRef) { suppressLeaveUntil = Date.now() + 20000; await roomRef.set(fullRoom()); }
+        if (!h.exists() && roomRef) await roomRef.set(fullRoom());
+        else if (roomRef) { await roomRef.child('created').set(firebase.database.ServerValue.TIMESTAMP); if (S) broadcast(); }
       } catch (e) {}
     });
     listen(players, 'child_added', s => onPlayerJoin(s.key, s.val()));
@@ -3464,8 +3525,14 @@ var qrcode = function() {
     if (!taken.has(name)) return name;
     for (let i = 2; ; i++) { const n = clean(name, 17) + ' ' + i; if (!taken.has(n)) return n; }
   }
+  const dropTimers = {};
+  const DROP_GRACE = 45000;
   function onPlayerJoin(uid, val) {
     if (typeof uid !== 'string' || uid === myUid || typeof val !== 'string' || val.startsWith('#')) return;
+    if (dropTimers[uid]) {
+      clearTimeout(dropTimers[uid]); delete dropTimers[uid];
+      if (S && S.msgType === 'bad' && /výpadek spojení/.test(S.msg)) { setMsg(S, ''); commit(); }
+    }
     const name = cleanName(val) || 'Hráč';
     if (!S) {
       const ex = lobby.find(p => p.uid === uid);
@@ -3487,11 +3554,20 @@ var qrcode = function() {
       return;
     }
     const idx = uids.indexOf(uid), p = S.players[idx];
-    if (!p || p.off) return;
-    p.off = true;
-    if (S.phase === 'play' && S.cur === idx) endTurn(S, `${p.name} se odpojil.`, 'bad');
-    else setMsg(S, `${p.name} se odpojil.`, 'bad');
-    commit();
+    if (!p || p.off || dropTimers[uid]) return;
+    // krátký výpadek (zhasnutý displej, přepnutí aplikace) hru nepřeruší
+    if (S.phase === 'play' && S.cur === idx) { setMsg(S, `${p.name} má výpadek spojení, čekám na něj…`, 'bad'); commit(); }
+    dropTimers[uid] = setTimeout(() => {
+      delete dropTimers[uid];
+      if (!S || !roomRef) return;
+      roomRef.child('players/' + uid).once('value').then(v => {
+        if (v.exists() || !S || p.off) return;
+        p.off = true;
+        if (S.phase === 'play' && S.cur === idx) endTurn(S, `${p.name} se odpojil, jeho tah se přeskakuje.`, 'bad');
+        else setMsg(S, `${p.name} se odpojil.`, 'bad');
+        commit();
+      }).catch(() => {});
+    }, DROP_GRACE);
   }
   function onAction(a) {
     if (!S || S.phase !== 'play' || !a || typeof a !== 'object' || typeof a.from !== 'string') return;
@@ -3600,7 +3676,7 @@ var qrcode = function() {
         if (!s.exists()) {
           hostPresent = false;
           clearTimeout(graceTimer);
-          graceTimer = setTimeout(() => { if (!hostPresent) leaveOnline('Zakladatel hru ukončil.', 'me'); }, 90000);
+          graceTimer = setTimeout(() => { if (!hostPresent) leaveOnline('Zakladatel hru ukončil.', 'me'); }, 15000);
           if (S) { setMsg(S, 'Zakladatel hry je nedostupný, čekám na něj…', 'bad'); renderGame(); }
           else $('joinStatus').textContent = 'Zakladatel je nedostupný, čekám na něj…';
         } else {
@@ -3612,10 +3688,16 @@ var qrcode = function() {
         }
       });
       hostSeen = Date.now();
-      listen(roomRef.child('created'), 'value', () => { hostSeen = Date.now(); });
+      listen(roomRef.child('created'), 'value', s => {
+        if (s.val() === 0) {
+          // zakladatel zhasl displej nebo přepnul aplikaci; hra na něj počká
+          if (S) { setMsg(S, 'Zakladatel hry není v aplikaci. Hra pokračuje, až se vrátí.', 'bad'); renderGame(); }
+          else $('joinStatus').textContent = 'Zakladatel není v aplikaci, čekám na něj…';
+        } else hostSeen = Date.now();
+      });
       hostWatch = setInterval(() => {
-        if (Date.now() - hostSeen > 70000 && S) { setMsg(S, 'Zakladatel hry je nedostupný, čekám na něj…', 'bad'); renderGame(); }
-      }, 10000);
+        if (Date.now() - hostSeen > 150000 && S) { setMsg(S, 'Zakladatel hry je nedostupný, čekám na něj…', 'bad'); renderGame(); }
+      }, 15000);
     } catch (e) {
       detachAll(); roomRef = null;
       $('joinStatus').textContent = fbErr(e); $('joinBtn').disabled = false;
