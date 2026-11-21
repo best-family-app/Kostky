@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-C71r7892bLkMZbSLi/oojZnEYZxPzgPER6Br5H6QjUw=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-xNWB+a4YPM92AcDbrDjIX52+4weRJ8hD+DnQ56wpNsQ=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -255,6 +255,38 @@
   #joinCode { text-transform: uppercase; letter-spacing: .3rem; font-weight: 700; text-align: center; }
   .player .name small { color: var(--muted); font-weight: 400; }
   .player.off { opacity: .55; }
+  /* ===== nastavení hry: karty hráčů, cíl, start ===== */
+  .screen:not([hidden]) { min-height: 100%; }
+  .sec { font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: .4rem 0 -.3rem; }
+  .pcards { display: flex; flex-direction: column; gap: .55rem; }
+  .pcard { display: flex; align-items: center; gap: .7rem; background: var(--card); border-radius: 1rem; padding: .55rem .6rem .55rem .7rem; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+  .avatar { width: 2.6rem; height: 2.6rem; border-radius: 50%; flex: none; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 1.15rem;
+    background: radial-gradient(circle at 35% 30%, var(--av-a), var(--av-b)); box-shadow: inset 0 -2px 0 rgba(0,0,0,.2); }
+  .pinfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .25rem; }
+  .pinfo input.nm { border: none; background: transparent; color: var(--text); font: inherit; font-size: 1.1rem; font-weight: 600; padding: .1rem 0; width: 100%; outline: none; box-shadow: none; border-bottom: 2px solid transparent; border-radius: 0; }
+  .pinfo input.nm:focus { border-bottom-color: var(--accent); }
+  .lvlchip { align-self: flex-start; border: none; border-radius: 1rem; padding: .22rem .65rem; font: inherit; font-size: .82rem; font-weight: 600; cursor: pointer; background: var(--line); color: var(--text); }
+  .lvlchip:focus-visible { outline: 3px solid var(--accent); }
+  .pdel { border: none; background: none; color: var(--muted); font-size: 1.3rem; width: 2.2rem; height: 2.2rem; border-radius: 50%; cursor: pointer; flex: none; }
+  .pdel:hover { background: var(--line); }
+  .pdel:disabled { visibility: hidden; }
+  .addrow { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; }
+  .dashed { border: 2px dashed var(--line); background: none; color: var(--muted); border-radius: 1rem; padding: .7rem .5rem; font: inherit; font-size: .95rem; font-weight: 600; cursor: pointer; }
+  .dashed:hover { color: var(--text); border-color: var(--muted); }
+  .targets { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .35rem; }
+  .targets .tchip { padding: .55rem .1rem; text-align: center; font-size: .92rem; }
+  .seg { display: flex; gap: .45rem; }
+  .form label { font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .form label input, .form label select { text-transform: none; letter-spacing: normal; font-weight: 400; }
+  #joinCode { text-transform: uppercase !important; }
+  .tchip, .segbtn { border: 2px solid transparent; background: var(--card); color: var(--text); border-radius: 1rem; padding: .5rem .62rem; font: inherit; font-size: .98rem; font-weight: 600; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.15); font-variant-numeric: tabular-nums; }
+  .tchip.on, .segbtn.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--card)); }
+  .segbtn { flex: 1; text-align: left; display: flex; flex-direction: column; gap: .1rem; }
+  .segbtn small { font-weight: 400; color: var(--muted); font-size: .8rem; }
+  .tcustom { margin-top: -.2rem; }
+  .stickybar { position: sticky; bottom: 0; margin-top: auto; padding: .8rem 0 calc(.4rem + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to bottom, transparent, var(--page) 35%); z-index: 5; }
+  .stickybar .btn { width: 100%; }
   .lvlsel { font: inherit; font-size: 1.05rem; padding: .7rem .6rem; border-radius: .7rem; border: 2px solid transparent; background: var(--field); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.18); }
   .lvlsel:focus { outline: none; border-color: var(--accent); }
   /* horní lišta */
@@ -391,18 +423,20 @@
   </section>
 
   <!-- HRA NA JEDNOM ZAŘÍZENÍ: NASTAVENÍ -->
-  <section id="setup" class="form" hidden>
+  <section id="setup" class="form screen" hidden>
     <button class="link back" id="setupBack">← Zpět</button>
     <h1>Hra na jednom zařízení</h1>
-    <div class="sub">Hráči (1 až 6) a jejich úroveň</div>
-    <div class="names" id="names"></div>
-    <div class="actions">
-      <button class="btn alt" id="addP">+ Hráč</button>
-      <button class="btn alt" id="addBot">+ Počítač 🤖</button>
+    <div class="sec">Hráči</div>
+    <div class="pcards" id="names"></div>
+    <div class="addrow">
+      <button class="dashed" id="addP">+ Přidat hráče</button>
+      <button class="dashed" id="addBot">+ Přidat počítač</button>
     </div>
-    <label>Body potřebné k vítězství <input id="target" type="number" inputmode="numeric" min="350" step="50"></label>
+    <div class="sec">Cíl hry</div>
+    <div class="targets" data-for="target"></div>
+    <input id="target" class="tcustom" type="number" inputmode="numeric" min="350" step="50" aria-label="Vlastní cíl hry" hidden>
     <p class="msg bad" id="setupMsg"></p>
-    <button class="btn" id="start">Začít hru</button>
+    <div class="stickybar"><button class="btn" id="start">Začít hru</button></div>
   </section>
 
   <!-- ONLINE: ZALOŽENÍ -->
@@ -411,11 +445,12 @@
     <h1>Online hra</h1>
     <div id="hostForm" class="form">
       <label>Tvoje jméno <input id="hostName" maxlength="20" autocomplete="off"></label>
-      <label>Body potřebné k vítězství <input id="hostTarget" type="number" inputmode="numeric" min="350" step="50"></label>
-      <label>Úroveň <select id="hostLvl" class="lvlsel">
-        <option value="beg">🌱 Začátečník – s nápovědou</option>
-        <option value="adv">🎯 Pokročilý – bez nápovědy</option>
-      </select></label>
+      <div class="sec">Cíl hry</div>
+      <div class="targets" data-for="hostTarget"></div>
+      <input id="hostTarget" class="tcustom" type="number" inputmode="numeric" min="350" step="50" aria-label="Vlastní cíl hry" hidden>
+      <div class="sec">Tvoje úroveň</div>
+      <div class="seg" data-for="hostLvl"></div>
+      <select id="hostLvl" hidden><option value="beg"></option><option value="adv"></option></select>
       <button class="btn" id="makeRoom">Vytvořit hru</button>
     </div>
     <div id="hostRoom" class="form" hidden>
@@ -445,10 +480,9 @@
         <button class="btn alt scanstop" id="scanStop" type="button">Zrušit skenování</button>
       </div>
       <label>Kód hry <input id="joinCode" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
-      <label>Úroveň <select id="joinLvl" class="lvlsel">
-        <option value="beg">🌱 Začátečník – s nápovědou</option>
-        <option value="adv">🎯 Pokročilý – bez nápovědy</option>
-      </select></label>
+      <div class="sec">Tvoje úroveň</div>
+      <div class="seg" data-for="joinLvl"></div>
+      <select id="joinLvl" hidden><option value="beg"></option><option value="adv"></option></select>
       <button class="btn" id="joinBtn">Připojit</button>
     </div>
     <div id="joinRoom" class="form" hidden>
@@ -3663,45 +3697,80 @@ var qrcode = function() {
   }
 
   // ================= hra na jednom zařízení =================
-  const nameRows = () => [...$('names').querySelectorAll('.row')];
+  const nameRows = () => [...$('names').querySelectorAll('.pcard')];
   function readNames() { return nameRows().map((r, i) => clean(r.querySelector('input.nm').value, 20) || (r.dataset.bot ? 'Počítač' : `Hráč ${i + 1}`)); }
-  function readAdvs() { return nameRows().map(r => { const c = r.querySelector('select.lvl'); return !!(c && c.value === 'adv'); }); }
-  function readBots() { return nameRows().map(r => { const sel = r.querySelector('select.botlvl'); return sel ? (+sel.value === 2 ? 2 : 1) : 0; }); }
+  function readAdvs() { return nameRows().map(r => !r.dataset.bot && r.dataset.lvl === 'adv'); }
+  function readBots() { return nameRows().map(r => r.dataset.bot ? (r.dataset.lvl === '2' ? 2 : 1) : 0); }
   const readRaw = () => nameRows().map(r => r.querySelector('input.nm').value);
+  const AV = [['#2E9E6A', '#1B5E40'], ['#3D7DD8', '#22508F'], ['#D9822B', '#8F4F14'], ['#B05CD6', '#6A2E86'], ['#D94B5A', '#8E1F2B'], ['#2AA6B8', '#16606B']];
+  const LV_H = { beg: '🌱 začátečník', adv: '🎯 pokročilý' }, LV_B = { 1: '🤖 opatrný', 2: '🤖 odvážný' };
   function renderNames(list, advs, bots) {
     advs = advs || []; bots = bots || [];
     const box = $('names');
     box.textContent = '';
     list.forEach((nm, i) => {
       const isBot = bots[i] === 1 || bots[i] === 2;
-      const row = document.createElement('div'); row.className = 'row';
-      if (isBot) row.dataset.bot = '1';
-      const num = document.createElement('span'); num.className = 'num'; num.textContent = (i + 1) + '.';
+      const card = document.createElement('div'); card.className = 'pcard';
+      if (isBot) card.dataset.bot = '1';
+      card.dataset.lvl = isBot ? String(bots[i]) : (advs[i] ? 'adv' : 'beg');
+      const av = document.createElement('div'); av.className = 'avatar';
+      av.style.setProperty('--av-a', AV[i % AV.length][0]); av.style.setProperty('--av-b', AV[i % AV.length][1]);
+      const setAv = () => { av.textContent = isBot ? '🤖' : ((inp.value.trim()[0] || '?').toUpperCase()); };
+      const info = document.createElement('div'); info.className = 'pinfo';
       const inp = document.createElement('input'); inp.className = 'nm'; inp.maxLength = 20; inp.autocomplete = 'off'; inp.value = nm;
       inp.setAttribute('aria-label', isBot ? `Jméno počítače ${i + 1}` : `Jméno hráče ${i + 1}`);
-      let extra;
-      if (isBot) {
-        extra = document.createElement('select'); extra.className = 'botlvl'; extra.setAttribute('aria-label', 'Povaha počítače');
-        [['1', '🤖 opatrný'], ['2', '🤖 odvážný']].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; extra.appendChild(o); });
-        extra.value = String(bots[i]);
-      } else {
-        extra = document.createElement('select'); extra.className = 'lvl'; extra.setAttribute('aria-label', 'Úroveň hráče');
-        [['beg', '🌱 začátečník'], ['adv', '🎯 pokročilý']].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; extra.appendChild(o); });
-        extra.value = advs[i] ? 'adv' : 'beg';
-      }
-      const del = document.createElement('button'); del.className = 'del'; del.textContent = '×';
-      del.setAttribute('aria-label', 'Odebrat hráče'); del.disabled = list.length <= 1;
+      inp.addEventListener('input', setAv);
+      const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'lvlchip';
+      const setChip = () => {
+        chip.textContent = isBot ? LV_B[card.dataset.lvl] : LV_H[card.dataset.lvl];
+        chip.setAttribute('aria-label', (isBot ? 'Povaha počítače: ' : 'Úroveň: ') + chip.textContent.replace(/^\S+\s/, '') + ', klepnutím změnit');
+      };
+      chip.onclick = () => { card.dataset.lvl = isBot ? (card.dataset.lvl === '1' ? '2' : '1') : (card.dataset.lvl === 'beg' ? 'adv' : 'beg'); setChip(); };
+      info.append(inp, chip);
+      const del = document.createElement('button'); del.className = 'pdel'; del.textContent = '×';
+      del.setAttribute('aria-label', 'Odebrat'); del.disabled = list.length <= 1;
       del.onclick = () => { const cur = readRaw(), a = readAdvs(), b = readBots(); cur.splice(i, 1); a.splice(i, 1); b.splice(i, 1); renderNames(cur, a, b); };
-      row.append(num, inp, extra, del); box.appendChild(row);
+      card.append(av, info, del); box.appendChild(card);
+      setAv(); setChip();
     });
     $('addP').hidden = $('addBot').hidden = list.length >= MAX_PLAYERS;
   }
+  // volba cíle hry: rychlé volby + vlastní hodnota (zdrojem pravdy je skryté pole input)
+  const TARGETS = [1000, 2000, 5000, 10000];
+  function renderTargets(box) {
+    const inp = $(box.dataset.for), cur = parseInt(inp.value, 10) || 1000;
+    const custom = !TARGETS.includes(cur) || box.dataset.custom === '1';
+    box.textContent = '';
+    TARGETS.forEach(v => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'tchip' + (!custom && v === cur ? ' on' : ''); b.textContent = fmt(v);
+      b.onclick = () => { inp.value = v; box.dataset.custom = ''; renderTargets(box); };
+      box.appendChild(b);
+    });
+    const c = document.createElement('button'); c.type = 'button'; c.className = 'tchip' + (custom ? ' on' : ''); c.textContent = 'jiný';
+    c.onclick = () => { box.dataset.custom = '1'; renderTargets(box); inp.focus(); inp.select(); };
+    box.appendChild(c);
+    inp.hidden = !custom;
+  }
+  function renderSeg(box) {
+    const sel = $(box.dataset.for);
+    box.textContent = '';
+    [['beg', '🌱 Začátečník', 's nápovědou'], ['adv', '🎯 Pokročilý', 'bez nápovědy']].forEach(([v, t, d]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'segbtn' + (sel.value === v ? ' on' : '');
+      b.setAttribute('aria-pressed', sel.value === v);
+      const tt = document.createElement('span'); tt.textContent = t; const dd = document.createElement('small'); dd.textContent = d;
+      b.append(tt, dd);
+      b.onclick = () => { sel.value = v; renderSeg(box); };
+      box.appendChild(b);
+    });
+  }
+  const refreshPickers = () => { document.querySelectorAll('.targets').forEach(renderTargets); document.querySelectorAll('.seg').forEach(renderSeg); };
   function openSetup() {
     mode = 'local';
     renderNames(Array.isArray(prefs.names) && prefs.names.length >= 1 ? prefs.names.slice(0, MAX_PLAYERS).map(n => clean(n, 20)) : [cleanName(prefs.myName) || 'Hráč 1', 'Hráč 2'],
       Array.isArray(prefs.advs) ? prefs.advs.map(Boolean) : [], Array.isArray(prefs.bots) ? prefs.bots.map(b => (b === 1 || b === 2) ? b : 0) : []);
     $('target').value = isInt(prefs.target, MIN_BANK, 1e6) ? prefs.target : 1000;
     $('setupMsg').textContent = '';
+    refreshPickers();
     screen('setup');
   }
   function startLocal() {
@@ -3869,6 +3938,7 @@ var qrcode = function() {
     mode = 'host';
     $('hostName').value = cleanName(prefs.myName); $('hostLvl').value = prefs.adv ? 'adv' : 'beg';
     $('hostTarget').value = isInt(prefs.target, MIN_BANK, 1e6) ? prefs.target : 1000;
+    refreshPickers();
     $('hostForm').hidden = false; $('hostRoom').hidden = true; $('hostStatus').textContent = '';
     $('makeRoom').disabled = false;
     screen('host');
@@ -4106,6 +4176,7 @@ var qrcode = function() {
     mode = 'guest';
     // jedno zařízení může používat víc lidí: jméno se zadává vždy, nabídnou se nedávná jména
     $('joinName').value = ''; $('joinLvl').value = prefs.adv ? 'adv' : 'beg';
+    refreshPickers();
     $('joinCode').value = '';
     renderNameChips();
     $('scanBtn').hidden = !canScan();
