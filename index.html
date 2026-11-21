@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-AC11+zafeprvB1qGR05OQ+1gIZtpxdk9h0PebUkXy38=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-51D1c4rokaD/U8jOlhqQuokecz5BzZ9nEXezDqXuvUU=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -255,6 +255,8 @@
   #joinCode { text-transform: uppercase; letter-spacing: .3rem; font-weight: 700; text-align: center; }
   .player .name small { color: var(--muted); font-weight: 400; }
   .player.off { opacity: .55; }
+  .turn strong { white-space: nowrap; }
+  .turn span { font-size: .88rem; line-height: 1.3; }
   .verbar { position: fixed; left: .6rem; right: .6rem; bottom: calc(.6rem + env(safe-area-inset-bottom, 0px)); z-index: 65; max-width: 30rem; margin: 0 auto;
     background: #8E1F26; color: #fff; border-radius: .9rem; padding: .7rem .8rem; display: flex; gap: .7rem; align-items: center; box-shadow: 0 6px 18px rgba(0,0,0,.35); font-size: .95rem; }
   .verbar .btn { flex: none; padding: .55rem .8rem; font-size: .95rem; background: #fff; color: #8E1F26; box-shadow: none; }
@@ -452,8 +454,6 @@
     <div class="scores" id="scores"></div>
     <div class="tray"><div class="felt" id="felt"><div class="felt-msg" id="feltMsg"></div></div></div>
     <div id="stats" class="stats" hidden></div>
-    <div class="aside" id="aside"></div>
-    <div class="log" id="log" hidden aria-live="polite"></div>
     <div class="turn"><strong id="turnPts"></strong><span id="selInfo"></span></div>
     <p class="msg" id="msg" aria-live="polite"></p>
     <div class="actions" id="actions">
@@ -473,7 +473,6 @@
   <div class="setrow"><span>Kostky</span><div class="swatches" id="dicePick"></div></div>
   <label class="setrow"><span>Nápověda<small>ztlumí nebodující kostky, ukáže riziko</small></span><input type="checkbox" class="sw-toggle" id="setHints"></label>
   <p class="sub" id="setHintsNote" hidden>Při hře na jednom zařízení se nápověda nastavuje u každého hráče (volba „pokročilý“).</p>
-  <label class="setrow"><span>Průběh tahů<small>poslední události pod miskou</small></span><input type="checkbox" class="sw-toggle" id="setLog"></label>
   <label class="setrow"><span>Rychlejší animace</span><input type="checkbox" class="sw-toggle" id="setFast"></label>
   <div class="grip" aria-hidden="true"></div>
 </section>
@@ -3325,14 +3324,7 @@ var qrcode = function() {
     });
 
     renderStats();
-    const lg = $('log'), items = (S.log || []).slice(-3).reverse();
-    lg.textContent = '';
-    if (S.phase === 'play') items.forEach((t, i) => { const d = document.createElement('div'); d.textContent = t; if (i === 0) d.className = 'new'; lg.appendChild(d); });
-    lg.hidden = S.phase !== 'play' || !items.length || prefs.log === false;
     $('game').classList.toggle('ended', S.phase === 'over');
-    $('aside').innerHTML = S.aside.length
-      ? S.aside.map(g => `<div class="group">${g.vals.map(v => `<div class="mini${v === 1 ? ' one' : ''}">${faceHTML(v)}</div>`).join('')}<b>+${g.pts}</b></div>`).join('')
-      : `<span class="empty">${S.phase === 'play' ? 'Odložené kostky se ukážou tady' : ''}</span>`;
 
     const sel = selVals(S), selPts = S.bonusReady ? null : scoreDice(sel), thrown = S.dice.length > 0;
     const miss = selPts ? 0 : partialMissing(S, sel);
@@ -4452,7 +4444,6 @@ var qrcode = function() {
     $('setVolVal').textContent = volume() > 0 ? Math.round(volume() * 100) + ' %' : 'vypnuto';
     $('setVibe').checked = vibeOn(); $('setVibeRow').hidden = !navigator.vibrate;
     $('setHints').checked = !prefs.adv;
-    $('setLog').checked = prefs.log !== false;
     $('setFast').checked = !!prefs.fast;
     $('setHintsNote').hidden = !(S && mode === 'local');
   }
@@ -4514,7 +4505,6 @@ var qrcode = function() {
   $('setVol').addEventListener('change', () => { if (soundOn()) { unlockAudio(); try { clack(0, 0.9); } catch (e) {} } });
   $('setVibe').onchange = e => { prefs.vibe = e.target.checked; savePrefs(); renderToggles(); if (vibeOn()) buzz(30); };
   $('setHints').onchange = e => { prefs.adv = !e.target.checked; savePrefs(); if (S) renderGame(); };
-  $('setLog').onchange = e => { prefs.log = e.target.checked; savePrefs(); if (S) renderGame(); };
   $('setFast').onchange = e => { prefs.fast = e.target.checked; savePrefs(); applyFast(); };
   applyFast();
   renderSheet();
