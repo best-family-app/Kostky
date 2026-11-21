@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-egyrBRRt+IBSB+MaQdww8RrjXzkmIMqErWlaXfvasb4=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-X2v7vexHZhIKwM8iU9t2UFz7DYRCF3FUHXlgCP3olIA=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -255,20 +255,24 @@
   #joinCode { text-transform: uppercase; letter-spacing: .3rem; font-weight: 700; text-align: center; }
   .player .name small { color: var(--muted); font-weight: 400; }
   .player.off { opacity: .55; }
+  /* horní lišta */
+  .top { gap: .6rem; }
+  .brand { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+  .brand b { font-size: 1.05rem; letter-spacing: .01em; }
+  #goal { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; color: var(--muted); font-size: .85rem; margin-top: .15rem; font-variant-numeric: tabular-nums; }
+  .chip-s { padding: .05rem .45rem; border-radius: 1rem; background: var(--card); color: var(--text); font-size: .75rem; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+  .chip-s.hot { background: var(--btn); color: #fff; }
+  .topbtns { display: flex; gap: .4rem; align-items: center; flex: none; }
+  .pill { border: none; border-radius: 1rem; padding: .45rem .75rem; cursor: pointer; white-space: nowrap;
+    background: var(--card); color: var(--text); font: inherit; font-size: .88rem; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .pill:active { transform: translateY(1px); }
+  .pill:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   .setrow.off { opacity: .45; }
   .turn strong { white-space: nowrap; }
   .turn span { font-size: .88rem; line-height: 1.3; }
   .verbar { position: fixed; left: .6rem; right: .6rem; bottom: calc(.6rem + env(safe-area-inset-bottom, 0px)); z-index: 65; max-width: 30rem; margin: 0 auto;
     background: #8E1F26; color: #fff; border-radius: .9rem; padding: .7rem .8rem; display: flex; gap: .7rem; align-items: center; box-shadow: 0 6px 18px rgba(0,0,0,.35); font-size: .95rem; }
   .verbar .btn { flex: none; padding: .55rem .8rem; font-size: .95rem; background: #fff; color: #8E1F26; box-shadow: none; }
-  .pulltab { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 2px); left: 50%; transform: translateX(-50%); z-index: 40;
-    width: 3.2rem; height: 1.1rem; border: none; background: none; cursor: pointer; padding: 0; }
-  .pulltab::after { content: ""; display: block; width: 2.6rem; height: .32rem; margin: 0 auto; border-radius: 1rem; background: var(--muted); opacity: .6; }
-  .gear { display: inline-flex; align-items: center; gap: .3rem; border: none; border-radius: 1rem; padding: .35rem .7rem; cursor: pointer;
-    background: var(--card); color: var(--text); font: inherit; font-size: 1.15rem; line-height: 1; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
-  .gear::after { content: "Nastavení"; font-size: .85rem; font-weight: 600; }
-  .gear:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  @media (max-width: 360px) { .gear::after { content: none; } }
   .sheetbg { position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,0); transition: background .25s; }
   .sheetbg.on { background: rgba(0,0,0,.45); }
   .sheet { position: fixed; left: 0; right: 0; top: 0; z-index: 80; margin: 0 auto; max-width: 30rem;
@@ -346,7 +350,6 @@
     <p class="msg bad" id="homeMsg"></p>
     <p class="sub" id="authState" hidden>✓ Toto zařízení smí zakládat hry · <button class="link" id="authRevoke" style="padding:0">zrušit oprávnění</button></p>
     <button class="btn alt" id="openSettings">⚙ Nastavení</button>
-    <p class="sub" style="text-align:center;margin-top:-.4rem">Nastavení otevřeš kdykoli i stažením shora dolů.</p>
     <details>
       <summary>Pravidla</summary>
       <ul>
@@ -450,10 +453,10 @@
   <!-- HRA -->
   <section id="game" hidden style="display:flex;flex-direction:column;gap:.7rem;flex:1;min-height:0">
     <div class="top">
-      <span id="goal" style="color:var(--muted);font-size:.95rem"></span>
+      <div class="brand"><b>Kostky</b><span id="goal"></span></div>
       <div class="topbtns">
-        <button class="gear" id="gearBtn" aria-label="Nastavení" title="Nastavení">⚙</button>
-        <button class="link" id="topAction"></button>
+        <button class="pill" id="gearBtn" aria-label="Nastavení">⚙ Nastavení</button>
+        <button class="pill" id="topAction"></button>
       </div>
     </div>
     <div class="scores" id="scores"></div>
@@ -467,7 +470,6 @@
     </div>
   </section>
 </main>
-<button class="pulltab" id="pullTab" aria-label="Otevřít nastavení"></button>
 <div class="verbar" id="verBar" hidden role="alert"><span id="verText"></span><button class="btn" id="verBtn">Aktualizovat</button></div>
 <div class="sheetbg" id="sheetBg" hidden></div>
 <section class="sheet" id="sheet" aria-hidden="true" aria-label="Nastavení">
@@ -2817,6 +2819,7 @@ var qrcode = function() {
     return String(v == null ? '' : v).replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202e\u2066-\u2069]/g, '').trim().slice(0, max);
   }
   const isInt = (x, a, b) => Number.isInteger(x) && x >= a && x <= b;
+  const fmt = n => Number(n).toLocaleString('cs-CZ');
 
   // ================= bodování =================
   function counts(vals) { const c = [0, 0, 0, 0, 0, 0, 0]; vals.forEach(v => c[v]++); return c; }
@@ -3288,7 +3291,7 @@ var qrcode = function() {
     // jednorázová nápověda, kde je nastavení
     if (!prefs.tipSettings) {
       prefs.tipSettings = true; savePrefs();
-      setTimeout(() => toast('Tip: zvuk, vibrace a vzhled nastavíš ikonou ⚙ vpravo nahoře nebo stažením obrazovky shora dolů.', 6000), 600);
+      setTimeout(() => toast('Tip: zvuk, vibrace a vzhled stolu nastavíš tlačítkem ⚙ Nastavení nahoře.', 5000), 600);
     }
   }
   let lastPhase = null;
@@ -3300,10 +3303,13 @@ var qrcode = function() {
     const busy = busyNow(), mine = myTurn(), online = mode !== 'local';
     const curP = S.players[S.cur];
 
-    $('goal').textContent = (mode === 'guest' && me < 0 ? '👀 Divák · ' : '') + (S.players.length === 1
-      ? `Cíl ${S.target} b. · ${S.phase === 'over' ? tahu(S.turns || 0) : 'tah č. ' + ((S.turns || 0) + 1)}`
-      : `Hra do ${S.target} b.${S.finalRound && S.phase === 'play' ? ' · poslední kolo' : ''}`);
-    $('topAction').textContent = mode === 'local' ? 'Resetovat hru' : (mode === 'host' ? 'Ukončit hru' : 'Odejít');
+    // horní lišta: cíl hry + stavové štítky
+    const goal = $('goal'); goal.textContent = `Cíl ${fmt(S.target)} b.`;
+    const chip = (t, cls) => { const c = document.createElement('span'); c.className = 'chip-s' + (cls ? ' ' + cls : ''); c.textContent = t; goal.appendChild(c); };
+    if (S.players.length === 1) chip(S.phase === 'over' ? tahu(S.turns || 0) : `tah ${(S.turns || 0) + 1}`);
+    if (S.finalRound && S.phase === 'play' && S.players.length > 1) chip('poslední kolo', 'hot');
+    if (mode === 'guest' && me < 0) chip('divák');
+    $('topAction').textContent = mode === 'local' ? '↺ Nová hra' : (mode === 'host' ? '■ Ukončit' : '⇥ Odejít');
 
     const sc = $('scores'), n = S.players.length;
     sc.style.setProperty('--cols', n <= 3 ? n : (n === 4 ? 2 : 3));
@@ -3319,7 +3325,7 @@ var qrcode = function() {
       if (p.bot) { const s = document.createElement('small'); s.textContent = ' 🤖'; nm.appendChild(s); }
       if (p.off) { const s = document.createElement('small'); s.textContent = ' odešel'; nm.appendChild(s); }
       else if (awayOf(i)) { const s = document.createElement('small'); s.textContent = ' mimo aplikaci'; nm.appendChild(s); }
-      el.querySelector('.pts').textContent = p.score;
+      el.querySelector('.pts').textContent = fmt(p.score);
       el.querySelector('i').style.width = Math.min(100, p.score / S.target * 100) + '%';
     });
 
@@ -3601,7 +3607,7 @@ var qrcode = function() {
     const inRoom = roomRef && (!$('host').hidden || !$('join').hidden);
     if (inGame || inRoom) {
       guardBack();
-      toast(mode === 'local' ? 'Hru ukončíš tlačítkem „Resetovat hru“ nahoře.' : mode === 'host' ? 'Hru ukončíš tlačítkem „Ukončit hru“ nahoře.' : 'Ze hry odejdeš tlačítkem „Odejít“ nahoře.');
+      toast(mode === 'local' ? 'Hru ukončíš tlačítkem „Nová hra“ nahoře.' : mode === 'host' ? 'Hru ukončíš tlačítkem „Ukončit“ nahoře.' : 'Ze hry odejdeš tlačítkem „Odejít“ nahoře.');
     }
   });
   function requireHost(next) {
@@ -4458,32 +4464,6 @@ var qrcode = function() {
     sheetTo(null, true); sheetBg.classList.remove('on');
     setTimeout(() => { if (!sheetOpen) sheetBg.hidden = true; }, 250);
   }
-  // gesto: táhnout dolů od horního okraje (z lišty nebo skóre)
-  let pull = null;
-  const mainEl = document.querySelector('main');
-  document.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1) return;
-    const t = e.touches[0];
-    if (sheetOpen) { if (sheet.contains(e.target)) pull = { y: t.clientY, x: t.clientX, dy: 0, up: true }; return; }
-    if (t.clientY > 150 || mainEl.scrollTop > 0) return;
-    pull = { y: t.clientY, x: t.clientX, dy: 0, up: false };
-  }, { passive: true });
-  document.addEventListener('touchmove', e => {
-    if (!pull) return;
-    const t = e.touches[0], dy = t.clientY - pull.y, dx = Math.abs(t.clientX - pull.x);
-    if (dx > 24 && dx > Math.abs(dy)) { pull = null; if (!sheetOpen) sheetTo(null, true); return; }
-    pull.dy = dy;
-    if (!pull.up && dy > 8) sheetTo(Math.min(dy * 0.9, sheet.offsetHeight), false);
-    if (pull.up && dy < 0) sheet.style.transition = 'none', sheet.style.transform = `translateY(${dy}px)`;
-  }, { passive: true });
-  document.addEventListener('touchcancel', () => { if (pull) { pull = null; if (sheetOpen) { sheet.style.transform = ''; sheet.style.transition = ''; } else sheetTo(null, true); } });
-  document.addEventListener('touchend', () => {
-    if (!pull) return;
-    const p = pull; pull = null;
-    if (p.up) { if (p.dy < -60) closeSheet(); else { sheet.style.transform = ''; sheet.style.transition = ''; } return; }
-    if (p.dy > 80) openSheet(); else sheetTo(null, true);
-  });
-  $('pullTab').onclick = openSheet;
   $('gearBtn').onclick = openSheet;
   $('verBtn').onclick = async () => {
     try { const r = await navigator.serviceWorker.getRegistration(); if (r) await r.update(); } catch (e) {}
