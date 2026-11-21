@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-51D1c4rokaD/U8jOlhqQuokecz5BzZ9nEXezDqXuvUU=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-qZOriwsRbca5GHkv5219tofvs5f8rY2aLGhoifpGemM=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -255,6 +255,7 @@
   #joinCode { text-transform: uppercase; letter-spacing: .3rem; font-weight: 700; text-align: center; }
   .player .name small { color: var(--muted); font-weight: 400; }
   .player.off { opacity: .55; }
+  .setrow.off { opacity: .45; }
   .turn strong { white-space: nowrap; }
   .turn span { font-size: .88rem; line-height: 1.3; }
   .verbar { position: fixed; left: .6rem; right: .6rem; bottom: calc(.6rem + env(safe-area-inset-bottom, 0px)); z-index: 65; max-width: 30rem; margin: 0 auto;
@@ -446,8 +447,6 @@
     <div class="top">
       <span id="goal" style="color:var(--muted);font-size:.95rem"></span>
       <div class="topbtns">
-        <button class="icon" id="soundBtn"></button>
-        <button class="icon" id="vibeBtn"></button>
         <button class="link" id="topAction"></button>
       </div>
     </div>
@@ -467,12 +466,11 @@
 <div class="sheetbg" id="sheetBg" hidden></div>
 <section class="sheet" id="sheet" aria-hidden="true" aria-label="Nastavení">
   <div class="sheethead"><h2>Nastavení</h2><button class="icon" id="sheetClose" aria-label="Zavřít nastavení">✕</button></div>
-  <div class="setrow"><span>Hlasitost</span><input type="range" id="setVol" min="0" max="100" step="10"><b id="setVolVal"></b></div>
+  <label class="setrow"><span>Zvuk</span><input type="checkbox" class="sw-toggle" id="setSound"></label>
+  <div class="setrow" id="setVolRow"><span>Hlasitost</span><input type="range" id="setVol" min="10" max="100" step="10" aria-label="Hlasitost"><b id="setVolVal"></b></div>
   <label class="setrow" id="setVibeRow"><span>Vibrace</span><input type="checkbox" class="sw-toggle" id="setVibe"></label>
   <div class="setrow"><span>Stůl</span><div class="swatches" id="feltPick"></div></div>
   <div class="setrow"><span>Kostky</span><div class="swatches" id="dicePick"></div></div>
-  <label class="setrow"><span>Nápověda<small>ztlumí nebodující kostky, ukáže riziko</small></span><input type="checkbox" class="sw-toggle" id="setHints"></label>
-  <p class="sub" id="setHintsNote" hidden>Při hře na jednom zařízení se nápověda nastavuje u každého hráče (volba „pokročilý“).</p>
   <label class="setrow"><span>Rychlejší animace</span><input type="checkbox" class="sw-toggle" id="setFast"></label>
   <div class="grip" aria-hidden="true"></div>
 </section>
@@ -3259,21 +3257,12 @@ var qrcode = function() {
   // hlasitost přímo v aplikaci: 100 % → 50 % → 20 % → vypnuto (Windows ji neumí nastavit zvlášť pro aplikaci)
   const VOLS = [1, 0.5, 0.2, 0];
   const animF = () => (prefs.fast ? 0.6 : 1);   // rychlejší animace
-  const volume = () => (prefs.sound === false ? 0 : (typeof prefs.vol === 'number' && prefs.vol >= 0 && prefs.vol <= 1 ? prefs.vol : 1));
+  const level = () => (typeof prefs.vol === 'number' && prefs.vol >= 0.1 && prefs.vol <= 1 ? prefs.vol : 1);
+  const volume = () => (prefs.sound === false ? 0 : level());
   const soundOn = () => volume() > 0;
   const vibeOn = () => prefs.vibe !== false;
   function buzz(pattern) { try { if (vibeOn() && navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
-  function renderToggles() {
-    const sb = $('soundBtn'), vb = $('vibeBtn');
-    const v = volume();
-    sb.textContent = v >= 1 ? '🔊' : v > 0.3 ? '🔉' : v > 0 ? '🔈' : '🔇';
-    sb.setAttribute('aria-pressed', soundOn());
-    sb.setAttribute('aria-label', `Hlasitost ${Math.round(v * 100)} %, klepnutím změnit`);
-    sb.title = v > 0 ? `Hlasitost ${Math.round(v * 100)} %` : 'Zvuk vypnutý';
-    vb.textContent = vibeOn() ? '📳' : '📴'; vb.setAttribute('aria-pressed', vibeOn()); vb.setAttribute('aria-label', vibeOn() ? 'Vypnout vibrace' : 'Zapnout vibrace');
-    vb.hidden = !navigator.vibrate;
-    renderSheet();
-  }
+  function renderToggles() { renderSheet(); }
   function playRoll(n) {
     try {
       if (!ctx || !soundOn()) return;
@@ -4337,13 +4326,6 @@ var qrcode = function() {
     if (cur.length < MAX_PLAYERS) { cur.push(`Hráč ${cur.length + 1}`); a.push(false); b.push(0); renderNames(cur, a, b); }
   };
   $('start').onclick = startLocal;
-  $('soundBtn').onclick = () => {
-    const v = volume(), i = VOLS.findIndex(x => x < v - 0.001);
-    prefs.vol = i < 0 ? VOLS[0] : VOLS[i]; prefs.sound = prefs.vol > 0;
-    savePrefs(); renderToggles();
-    if (soundOn()) { unlockAudio(); try { clack(0, 0.9); } catch (e) {} } // ukázka hlasitosti
-  };
-  $('vibeBtn').onclick = () => { prefs.vibe = !vibeOn(); savePrefs(); renderToggles(); if (vibeOn()) buzz(30); };
   $('makeRoom').onclick = makeRoom;
   $('share').onclick = shareCode;
   $('startOnline').onclick = startOnline;
@@ -4440,12 +4422,13 @@ var qrcode = function() {
   function applyFast() { document.documentElement.toggleAttribute('data-fast', !!prefs.fast); }
   function renderSheet() {
     if (!$('sheet')) return;
-    $('setVol').value = Math.round(volume() * 100);
-    $('setVolVal').textContent = volume() > 0 ? Math.round(volume() * 100) + ' %' : 'vypnuto';
+    $('setSound').checked = soundOn();
+    $('setVol').value = Math.round(level() * 100);
+    $('setVol').disabled = !soundOn();
+    $('setVolRow').classList.toggle('off', !soundOn());
+    $('setVolVal').textContent = Math.round(level() * 100) + ' %';
     $('setVibe').checked = vibeOn(); $('setVibeRow').hidden = !navigator.vibrate;
-    $('setHints').checked = !prefs.adv;
     $('setFast').checked = !!prefs.fast;
-    $('setHintsNote').hidden = !(S && mode === 'local');
   }
   let sheetOpen = false;
   const sheet = $('sheet'), sheetBg = $('sheetBg');
@@ -4498,13 +4481,16 @@ var qrcode = function() {
   $('sheetClose').onclick = closeSheet;
   sheetBg.onclick = closeSheet;
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheetOpen) closeSheet(); });
+  $('setSound').onchange = e => {
+    prefs.sound = e.target.checked; savePrefs(); renderSheet();
+    if (soundOn()) { unlockAudio(); try { clack(0, 0.9); } catch (x) {} }
+  };
   $('setVol').addEventListener('input', e => {
-    prefs.vol = Math.max(0, Math.min(1, (+e.target.value || 0) / 100)); prefs.sound = prefs.vol > 0;
-    savePrefs(); renderToggles();
+    prefs.vol = Math.max(0.1, Math.min(1, (+e.target.value || 0) / 100));
+    savePrefs(); renderSheet();
   });
   $('setVol').addEventListener('change', () => { if (soundOn()) { unlockAudio(); try { clack(0, 0.9); } catch (e) {} } });
   $('setVibe').onchange = e => { prefs.vibe = e.target.checked; savePrefs(); renderToggles(); if (vibeOn()) buzz(30); };
-  $('setHints').onchange = e => { prefs.adv = !e.target.checked; savePrefs(); if (S) renderGame(); };
   $('setFast').onchange = e => { prefs.fast = e.target.checked; savePrefs(); applyFast(); };
   applyFast();
   renderSheet();
