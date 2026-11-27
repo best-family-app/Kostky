@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-xNWB+a4YPM92AcDbrDjIX52+4weRJ8hD+DnQ56wpNsQ=' https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qQ/y+up2SVbdHfntqsMqiw20PkkM/Pq01kF/stO1Osg=' 'sha256-WlaYGRPcBmPyAyq9tVsp7XKfbp+pQz/dSF61YM0pPO4=' 'sha256-6C90Ah0Es3DdUjfCNIGu8MWsoCKET+H/EnmZz2e1tj4=' 'sha256-eeyG+ChWAFsciHkFz8z8++w4Icphx/1alS+qX3ePeRw=' 'sha256-XoBD5j3QH255tfFYH+0Bmb+UkadtXjaArKR0yhIyRm0='; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app wss://kostky-92c11-default-rtdb.europe-west1.firebasedatabase.app https://*.europe-west1.firebasedatabase.app wss://*.europe-west1.firebasedatabase.app; frame-src https://kostky-92c11.firebaseapp.com; base-uri 'none'; form-action 'none'; object-src 'none'; media-src 'none'; worker-src 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2024">
@@ -3426,7 +3426,7 @@ var qrcode = function() {
         return;
       }
       bankBtn.textContent = mode === 'host' ? 'Do čekárny' : 'Změnit hráče'; bankBtn.disabled = false;
-      bankBtn.onclick = mode === 'host' ? backToLobby : () => { store.del('kostky-hra'); S = null; openSetup(); };
+      bankBtn.onclick = mode === 'host' ? backToLobby : () => { store.del('kostky-hra'); S = null; releaseWake(); openSetup(); };
       roll.textContent = 'Odveta'; roll.disabled = false; roll.onclick = () => act({ t: 'rematch' });
       return;
     }
@@ -3874,13 +3874,12 @@ var qrcode = function() {
   }
 
   let myUid = null, roomRef = null, roomCode = '', hostTarget = 1000, myName = '';
-  let lobby = [], uids = [], listeners = [], heartbeat = null, actRate = {};
+  let lobby = [], uids = [], listeners = [], heartbeat = null;
   function listen(ref, ev, fn) { ref.on(ev, fn); listeners.push(() => ref.off(ev, fn)); }
   function detachAll() {
     listeners.forEach(f => { try { f(); } catch (e) {} });
     listeners = [];
     clearInterval(heartbeat); heartbeat = null;
-    clearInterval(hostWatch); hostWatch = null;
   }
   function leaveOnline(text, removeWhat) {
     const ref = roomRef;
@@ -3922,13 +3921,14 @@ var qrcode = function() {
   }
   let wake = null;
   function keepAwake() {
-    if (mode === 'local' || !('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+    if (!('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
     navigator.wakeLock.request('screen').then(w => { wake = w; }).catch(() => {});
   }
   function releaseWake() { try { if (wake) wake.release(); } catch (e) {} wake = null; }
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState !== 'visible' || mode === 'local') return;
-    if (S) keepAwake();
+    if (document.visibilityState !== 'visible') return;
+    if (S && !$('game').hidden) keepAwake();
+    if (mode === 'local') return;
     // po návratu do aplikace hned obnovit spojení, nečekat na SDK
     if (warm && !fbConnected) nudge();
   });
@@ -4171,7 +4171,7 @@ var qrcode = function() {
   }
 
   // ================= online: hráč, který se připojuje =================
-  let hostSeen = 0, hostWatch = null, graceTimer = null, hostPresent = false, hostSeenOnce = false, spectator = false;
+  let graceTimer = null, hostPresent = false, hostSeenOnce = false, spectator = false;
   function openJoin() {
     mode = 'guest';
     // jedno zařízení může používat víc lidí: jméno se zadává vždy, nabídnou se nedávná jména
@@ -4306,16 +4306,12 @@ var qrcode = function() {
           hostSeenOnce = true;
         }
       });
-      hostSeen = Date.now();
       listen(roomRef.child('created'), 'value', s => {
         if (s.val() === 0) {
           // zakladatel zhasl displej nebo přepnul aplikaci; hra na něj počká
           if (!S) $('joinStatus').textContent = 'Zakladatel není v aplikaci, hru spustí po návratu.';
-        } else hostSeen = Date.now();
+        }
       });
-      hostWatch = setInterval(() => {
-        // ve hře zakladatele nepotřebujeme, hlídá se jen v čekárně
-      }, 15000);
     } catch (e) {
       detachAll(); roomRef = null;
       $('joinStatus').textContent = fbErr(e); $('joinBtn').disabled = false;
@@ -4376,7 +4372,6 @@ var qrcode = function() {
     } else if (idx < 0) return;
     const fresh = !S || $('game').hidden;
     S = s; me = idx; uids = o.uids;
-    hostSeen = Date.now();
     if (fresh && (mode === 'guest' || !$('host').hidden || !$('game').hidden)) enterGame(); else renderGame();
   }
   // odchod ze hry: hráč se sám označí jako odešlý (a když je na tahu, tah přejde dál)
@@ -4389,12 +4384,6 @@ var qrcode = function() {
       if (s.cur === i) endTurn(s, `${q.name} odešel ze hry.`, 'bad', -1); else setMsg(s, `${q.name} odešel ze hry.`, 'bad');
       return true;
     });
-  }
-  function sendAction(a) {
-    if (!roomRef || !myUid) return;
-    const msg = { from: myUid, t: a.t };
-    if (a.t === 'toggle') msg.i = a.i;
-    roomRef.child('actions').push(msg).catch(() => {});
   }
 
   // ================= ovládání =================
@@ -4434,7 +4423,7 @@ var qrcode = function() {
   $('topAction').onclick = () => {
     if (mode === 'local') {
       if (!confirm('Opravdu ukončit hru a začít znovu?')) return;
-      store.del('kostky-hra'); S = null; openSetup();
+      store.del('kostky-hra'); S = null; releaseWake(); openSetup();
     } else if (mode === 'host') backToLobby();
     else if (confirm('Opravdu odejít ze hry?')) markLeft().then(() => leaveOnline('', 'me'));
   };
